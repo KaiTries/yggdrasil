@@ -2,13 +2,16 @@ package org.hyperagents.yggdrasil.store.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import org.eclipse.rdf4j.common.exception.ValidationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
@@ -29,7 +32,12 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.WriterConfig;
+import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.sail.Sail;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.eclipse.rdf4j.sail.shacl.ShaclSail;
 import org.hyperagents.yggdrasil.store.RdfStore;
 import org.hyperagents.yggdrasil.utils.RdfModelUtils;
 
@@ -50,6 +58,56 @@ public class Rdf4jStore implements RdfStore {
     final String entityIriString = entityIri.toString();
     final String fixedIri = entityIriString.endsWith("/") ? entityIriString : entityIriString + "/";
     return RdfModelUtils.createIri(fixedIri);
+  }
+
+  public void isShaclValid(final String shaclRule, final String modelRepresentation,
+                           final String entityIri)
+      throws IOException {
+    ShaclSail shaclSail = new ShaclSail(new MemoryStore());
+    shaclSail.setParallelValidation(false);
+    shaclSail.setDashDataShapes(false);
+
+    Repository validationRepository = new SailRepository(shaclSail);
+    validationRepository.init();
+
+    try (RepositoryConnection validationConnection = validationRepository.getConnection()) {
+      final var fixedEntityIri = fixEntityIri(RdfModelUtils.createIri(entityIri));
+
+      // Load SHACL shapes into the temporary repository
+      try (StringReader shaclRules = new StringReader(ShaclRules.artifactTDRule)) {
+        validationConnection.begin();
+        validationConnection.add(shaclRules, fixedEntityIri.stringValue(), RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+        validationConnection.commit();
+      }
+
+      // Load the model to be validated
+      validationConnection.begin();
+      final var model = RdfModelUtils.stringToModel(modelRepresentation, fixedEntityIri, RDFFormat.TURTLE);
+      validationConnection.add(model, fixedEntityIri);
+
+      System.out.println(modelRepresentation);
+      // Attempt to commit, triggering SHACL validation
+      try {
+        validationConnection.commit();
+      } catch (RepositoryException exception) {
+        Throwable cause = exception.getCause();
+
+        if (cause instanceof ValidationException) {
+          Model validationReportModel = ((ValidationException) cause).validationReportAsModel();
+
+          WriterConfig writerConfig = new WriterConfig()
+              .set(BasicWriterSettings.INLINE_BLANK_NODES, true)
+              .set(BasicWriterSettings.XSD_STRING_TO_PLAIN_LITERAL, true)
+              .set(BasicWriterSettings.PRETTY_PRINT, true);
+
+          Rio.write(validationReportModel, System.out, RDFFormat.TURTLE, writerConfig);
+        }
+        throw exception;
+      }
+    } finally {
+      // Shut down the temporary repository after validation
+      validationRepository.shutDown();
+    }
   }
 
   @Override

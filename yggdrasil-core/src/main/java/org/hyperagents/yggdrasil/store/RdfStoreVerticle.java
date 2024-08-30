@@ -29,6 +29,7 @@ import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMes
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.model.Environment;
 import org.hyperagents.yggdrasil.store.impl.RdfStoreFactory;
+import org.hyperagents.yggdrasil.store.impl.ShaclRules;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
 import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.JsonObjectUtils;
@@ -291,8 +292,11 @@ public class RdfStoreVerticle extends AbstractVerticle {
       final Message<RdfStoreMessage> message
   ) throws IOException {
     // Create IRI for new entity
+
     final var artifactIri =
         this.generateEntityIri(requestIri.toString(), content.artifactName());
+    this.store.isShaclValid(ShaclRules.artifactTDRule, content.artifactRepresentation(),
+        artifactIri);
     final var entityIri = RdfModelUtils.createIri(artifactIri);
     Optional
         .ofNullable(content.artifactRepresentation())
@@ -302,6 +306,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
         .ifPresentOrElse(
           Failable.asConsumer(s -> {
             final var entityModel = RdfModelUtils.stringToModel(s, entityIri, RDFFormat.TURTLE);
+
 
             final var workspaceIri = RdfModelUtils.createIri(
                 artifactIri.substring(0, artifactIri.indexOf("/artifacts/"))

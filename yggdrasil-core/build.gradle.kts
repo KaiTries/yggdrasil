@@ -49,6 +49,7 @@ dependencies {
   implementation(libs.gson)
 
   implementation(libs.rdf4j.model)
+  implementation(libs.rdf4j.shacl)
   implementation(libs.rdf4j.repository.sail)
   implementation(libs.rdf4j.sail.memory)
   implementation(libs.rdf4j.sail.nativerdf)

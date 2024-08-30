@@ -21,6 +21,7 @@ hmas-java = "com.github.danaivach:hmas-java:main-SNAPSHOT"
 httpcomponents-core5 = "org.apache.httpcomponents.core5:httpcore5:5.2.4"
 rdf4j-storage = { module = "org.eclipse.rdf4j:rdf4j-storage", version.ref ="rdf4j"}
 rdf4j-model = { module = "org.eclipse.rdf4j:rdf4j-model", version.ref = "rdf4j" }
+rdf4j-shacl = { module = "org.eclipse.rdf4j:rdf4j-shacl", version.ref = "rdf4j"}
 rdf4j-rio-turtle = { module = "org.eclipse.rdf4j:rdf4j-rio-turtle", version.ref = "rdf4j" }
 rdf4j-rio-jsonld = { module = "org.eclipse.rdf4j:rdf4j-rio-jsonld", version.ref = "rdf4j" }
 rdf4j-repository-sail = { module = "org.eclipse.rdf4j:rdf4j-repository-sail", version.ref = "rdf4j" }

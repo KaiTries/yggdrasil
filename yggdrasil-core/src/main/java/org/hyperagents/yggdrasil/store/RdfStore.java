@@ -20,6 +20,8 @@ public interface RdfStore {
 
   void removeEntityModel(IRI entityIri) throws IOException;
 
+  void isShaclValid(String rule, String representation, String entiryIri) throws  IOException;
+
   void close() throws IOException;
 
   String queryGraph(
