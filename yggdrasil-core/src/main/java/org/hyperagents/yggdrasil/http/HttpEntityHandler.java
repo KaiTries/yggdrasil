@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.CartagoMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.HttpNotificationDispatcherMessagebox;
@@ -725,38 +724,34 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
                                            final String entityRepresentation) {
     final var requestUri = this.httpConfig.getBaseUri() + context.request().path().substring(1);
     final var hint = context.request().getHeader(SLUG_HEADER);
-    final var name = hint.endsWith("/") ? hint : hint + "/";
+    final var name = hint.endsWith("/") ? hint.substring(0, hint.length() - 1) : hint;
     final var entityIri = RdfModelUtils.createIri(requestUri + name);
 
-    final Model entityGraph;
-    try {
-      entityGraph = RdfModelUtils.stringToModel(
-        entityRepresentation,
-        entityIri,
-        RDFFormat.TURTLE
-      );
-    } catch (Exception e) {
-      context.response().setStatusCode(HttpStatus.SC_BAD_REQUEST).end();
-      return;
-    }
-
-    // TODO: if slug is without trailing backslash and representation is with then doesnt work
-
-    entityGraph.remove(null, RDF.TYPE, RdfModelUtils.createIri("https://purl.org/hmas/ResourceProfile"));
-    entityGraph.remove(null, RdfModelUtils.createIri("https://purl.org/hmas/isProfileOf"), null);
-    entityGraph.remove(null, RDF.TYPE, RdfModelUtils.createIri("https://purl.org/hmas/Workspace"));
     this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetEntityIri(requestUri, name)).compose(
         actualEntityName -> {
+
+          final Model actualModel;
+          try {
+            actualModel = RdfModelUtils.stringToModel(
+                entityRepresentation,
+                RdfModelUtils.createIri(requestUri + actualEntityName.body()),
+                RDFFormat.TURTLE
+            );
+          } catch (Exception e) {
+            context.response().setStatusCode(HttpStatus.SC_BAD_REQUEST).end();
+            return null;
+          }
+
           var workspaceRepresentation =
               this.representationFactory.createWorkspaceRepresentation(actualEntityName.body(),
                  new HashSet<>(), false);
           try {
             final var baseModel =
                 RdfModelUtils.stringToModel(workspaceRepresentation, entityIri, RDFFormat.TURTLE);
-            entityGraph.addAll(
+            actualModel.addAll(
                 RdfModelUtils.stringToModel(workspaceRepresentation, entityIri, RDFFormat.TURTLE));
-            baseModel.getNamespaces().forEach(entityGraph::setNamespace);
-            workspaceRepresentation = RdfModelUtils.modelToString(entityGraph, RDFFormat.TURTLE,
+            baseModel.getNamespaces().forEach(actualModel::setNamespace);
+            workspaceRepresentation = RdfModelUtils.modelToString(actualModel, RDFFormat.TURTLE,
                 this.httpConfig.getBaseUri());
           } catch (IOException e) {
             throw new RuntimeException(e);
@@ -765,7 +760,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
             .sendMessage(new RdfStoreMessage.CreateWorkspace(
               requestUri,
               actualEntityName.body(),
-              entityGraph.stream()
+              actualModel.stream()
                 .filter(t ->
                   t.getSubject().toString().contains(entityIri.stringValue())
                     && t.getPredicate().equals(RdfModelUtils.createIri(
