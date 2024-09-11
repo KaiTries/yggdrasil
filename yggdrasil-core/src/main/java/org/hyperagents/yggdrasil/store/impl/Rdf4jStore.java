@@ -60,6 +60,7 @@ public class Rdf4jStore implements RdfStore {
     return RdfModelUtils.createIri(fixedIri);
   }
 
+  @Override
   public void isShaclValid(final String shaclRule, final String modelRepresentation,
                            final String entityIri)
       throws IOException {
@@ -74,7 +75,7 @@ public class Rdf4jStore implements RdfStore {
       final var fixedEntityIri = fixEntityIri(RdfModelUtils.createIri(entityIri));
 
       // Load SHACL shapes into the temporary repository
-      try (StringReader shaclRules = new StringReader(ShaclRules.artifactTDRule)) {
+      try (StringReader shaclRules = new StringReader(ShaclRules.oneResourceProfileRule)) {
         validationConnection.begin();
         validationConnection.add(shaclRules, fixedEntityIri.stringValue(), RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
         validationConnection.commit();
@@ -85,7 +86,6 @@ public class Rdf4jStore implements RdfStore {
       final var model = RdfModelUtils.stringToModel(modelRepresentation, fixedEntityIri, RDFFormat.TURTLE);
       validationConnection.add(model, fixedEntityIri);
 
-      System.out.println(modelRepresentation);
       // Attempt to commit, triggering SHACL validation
       try {
         validationConnection.commit();

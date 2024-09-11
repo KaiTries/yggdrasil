@@ -284,6 +284,18 @@ public class RdfStoreVerticle extends AbstractVerticle {
   }
 
   /**
+   * Checks the validity for a given turtle input
+   */
+  private void handleShaclCheck(
+      final IRI requestIri,
+      final RdfStoreMessage.ShaclCheck content,
+      final Message<RdfStoreMessage> message
+  ){
+
+  }
+
+
+  /**
    * Creates an artifact and adds it to the store.
    */
   private void handleCreateArtifact(

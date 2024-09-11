@@ -28,4 +28,20 @@ public class ShaclRules {
                                             sh:closed false ;
                                             sh:ignoredProperties ( rdf:type ) .
                                         """;
+  public static String oneResourceProfileRule = """
+                                                @prefix sh: <http://www.w3.org/ns/shacl#> .
+                                                @prefix ex: <http://example.org/> .
+                                                @prefix hmas: <https://purl.org/hmas/> .
+
+                                                ex:SingleResourceProfileShape a sh:NodeShape ;
+                                                    sh:targetClass hmas:ResourceProfile ;
+                                                    sh:property [
+                                                        sh:path rdf:type ;
+                                                        sh:qualifiedValueShape [
+                                                            sh:class hmas:ResourceProfile ;
+                                                        ] ;
+                                                        sh:qualifiedMaxCount 1 ;
+                                                        sh:qualifiedMinCount 1 ;
+                                                    ] .
+                                                """;
 }
