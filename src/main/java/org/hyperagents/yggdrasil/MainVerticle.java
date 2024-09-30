@@ -5,6 +5,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.hyperagents.yggdrasil.coap.CoapServerVerticle;
 import org.hyperagents.yggdrasil.http.HttpServerVerticle;
 import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.model.parser.EnvironmentParser;
@@ -50,6 +51,8 @@ public class MainVerticle extends AbstractVerticle {
 
       // start the verticles
       return this.vertx.deployVerticle(new HttpServerVerticle()).compose(
+          v -> this.vertx.deployVerticle(new CoapServerVerticle())
+      ).compose(
         v -> this.vertx.deployVerticle(new RdfStoreVerticle(),
           new DeploymentOptions().setConfig(c))).compose(v -> notificationConfig.isEnabled()
         ?

@@ -34,6 +34,12 @@ dependencies {
   implementation(project(":yggdrasil-utils"))
   implementation(project(":yggdrasil-cartago"))
 
+  implementation ("org.eclipse.californium:californium-core:3.12.0")
+  // https://mvnrepository.com/artifact/org.eclipse.californium/element-connector
+  implementation("org.eclipse.californium:element-connector:3.12.0")
+
+
+
   implementation(libs.log4j.core)
   implementation(libs.vertx.core)
   implementation(libs.vertx.config)
