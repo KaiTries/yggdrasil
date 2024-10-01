@@ -2,7 +2,6 @@ package org.hyperagents.yggdrasil.model.parser;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,7 +52,7 @@ public final class EnvironmentParser {
    * @param config a valid Yggdrasil configuration
    * @return a List containing all agents
    */
-  private static List<YggdrasilAgent> parseAgents(JsonObject  config) {
+  private static List<YggdrasilAgent> parseAgents(final JsonObject  config) {
     return JsonObjectUtils.getJsonArray(config, "agents", LOGGER::error)
         .stream().flatMap(a -> IntStream.range(0, a.size()).mapToObj(a::getValue)
           .flatMap(o -> (o instanceof JsonObject j ? Optional.of(j) : Optional.<JsonObject>empty())
@@ -86,11 +85,12 @@ public final class EnvironmentParser {
                 return Stream.of(new AgentBodyImpl(metadata.orElse(null), joined));
               }).toList();
 
-          return Stream.of(new YggdrasilAgentImpl(name.get(), agentUri.get(), callbackUri, bodies));
+          return Stream.of(new YggdrasilAgentImpl(
+              name.get(), agentUri.get(), callbackUri.orElse(null), bodies));
         }).collect(Collectors.toList());
   }
 
-  private static Set<KnownArtifact> parseKnownArtifacts(Optional<JsonObject> envConfig) {
+  private static Set<KnownArtifact> parseKnownArtifacts(final Optional<JsonObject> envConfig) {
     return envConfig
       .flatMap(c -> JsonObjectUtils.getJsonArray(c, "known-artifacts", LOGGER::error))
       .stream()
@@ -200,7 +200,7 @@ public final class EnvironmentParser {
                     );
                   }
                   return workspaceNames.contains(p);
-                }),
+                }).orElse(null),
               joiningAgents,
               JsonObjectUtils
                 .getJsonArray(w, "artifacts", LOGGER::error)
@@ -243,7 +243,7 @@ public final class EnvironmentParser {
                   ));
                 })
                 .collect(Collectors.toSet()),
-              JsonObjectUtils.getString(w, "representation", LOGGER::error).map(Path::of)
+              JsonObjectUtils.getString(w, "representation", LOGGER::error).orElse(null)
             ));
           })
           .toList()

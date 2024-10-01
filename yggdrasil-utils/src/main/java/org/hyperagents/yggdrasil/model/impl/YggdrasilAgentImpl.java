@@ -13,22 +13,22 @@ public class YggdrasilAgentImpl  implements YggdrasilAgent {
 
   private final String name;
   private final String agentUri;
-  private final Optional<String> agentCallbackUri;
+  private final String agentCallbackUri;
   private final List<AgentBody> bodies;
 
   /**
    * Default constructor.
    */
-  public YggdrasilAgentImpl(String name, String agentUri, Optional<String> agentCallbackUri,
-                            List<AgentBody> bodies) {
+  public YggdrasilAgentImpl(final String name, final String agentUri, final String agentCallbackUri,
+                            final List<AgentBody> bodies) {
     this.name = name;
     this.agentUri = agentUri;
     this.agentCallbackUri = agentCallbackUri;
-    this.bodies = bodies;
+    this.bodies = List.copyOf(bodies);
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -58,11 +58,11 @@ public class YggdrasilAgentImpl  implements YggdrasilAgent {
 
   @Override
   public Optional<String> getAgentCallbackUri() {
-    return agentCallbackUri;
+    return Optional.ofNullable(agentCallbackUri);
   }
 
   @Override
   public List<AgentBody> getBodyConfig() {
-    return bodies;
+    return List.copyOf(bodies);
   }
 }
