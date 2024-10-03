@@ -3,8 +3,10 @@ package org.hyperagents.yggdrasil.coap;
 import static org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
+import java.util.List;
 import java.util.Objects;
+import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.CartagoMessagebox;
@@ -74,12 +76,21 @@ public class CoapEntityHandler {
     // check if it is trying to do /join or post to workspace
     final var uriPathString = exchange.getRequestOptions().getUriPathString().split("/");
     if (Objects.equals(uriPathString[uriPathString.length - 1], "join")) {
-      final var requestPayload = exchange.getRequestText();
-      JsonObject jsonObject = new JsonObject(requestPayload);
+      final var metadata = exchange.getRequestText();
 
+      OptionSet optionSet = exchange.advanced().getRequest().getOptions();
+      List<Option> options = optionSet.asSortedList();
 
-      final var agentId = jsonObject.getString("agentId");
-      final var agentBodyName = jsonObject.getString("agentName");
+      final var agentId = options.stream().filter(o -> o.getNumber() == 500)
+          .findFirst()
+          .orElseThrow()
+          .getStringValue();
+
+      final var agentBodyName = options.stream().filter(o -> o.getNumber() == 600)
+          .findFirst()
+          .orElseThrow()
+          .getStringValue();
+
       final var workspaceName = uriPathString[uriPathString.length - 2];
 
       this.cartagoMessagebox
@@ -95,7 +106,13 @@ public class CoapEntityHandler {
                   agentBodyName,
                   response.body()
               ))
-          ).onSuccess(s -> {
+          )
+          .compose(r -> this.rdfStoreMessagebox
+              .sendMessage(new RdfStoreMessage.UpdateEntity(
+                  this.httpConfig.getAgentBodyUri(workspaceName, agentBodyName),
+                  metadata
+              )))
+          .onSuccess(s -> {
             exchange.accept();
             // start asynchronous processing, passing the exchange to a result callback
             Response response = new Response(CONTENT);
