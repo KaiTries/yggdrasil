@@ -1,23 +1,35 @@
 package org.hyperagents.yggdrasil.coap;
 
+import io.vertx.core.Vertx;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.StringUtil;
+import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
 /**
  * CoapServer class specific for Yggdrasil, has specific routing rules.
  */
 public class YggdrasilCoAPServer extends CoapServer {
   private final CoapEntityHandler handler;
+  private final NetworkInterfaceConfig coapConfig;
+  private final NetworkInterfaceConfig httpConfig;
+  private final EnvironmentConfig environmentConfig;
 
   /**
    * Default constructor for Yggdrasil coapServer.
    */
-  public YggdrasilCoAPServer(final CoapEntityHandler handler) {
-    super();
-    this.handler = handler;
+  public YggdrasilCoAPServer(final Vertx vertx,
+                             final NetworkInterfaceConfig coapConfig,
+                             final NetworkInterfaceConfig httpConfig,
+                             final EnvironmentConfig environmentConfig) {
+    super(coapConfig.getPort());
+    this.coapConfig = coapConfig;
+    this.httpConfig = httpConfig;
+    this.environmentConfig = environmentConfig;
+    this.handler = new CoapEntityHandler(vertx, coapConfig, httpConfig, environmentConfig);
     setupYggdrasil();
   }
 

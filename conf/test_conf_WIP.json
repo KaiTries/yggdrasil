@@ -4,6 +4,11 @@
     "port" : 8080,
     "base-uri" : "http://localhost:8080/"
   },
+  "coap-config" : {
+    "host" : "localhost",
+    "port" : 5683,
+    "base-uri" : "coap://localhost:5683/"
+  },
   "notification-config" : {
     "enabled" : true
   },

@@ -12,29 +12,32 @@ import org.hyperagents.yggdrasil.eventbus.messageboxes.RdfStoreMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.CartagoMessage;
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
 /**
  * Handler for coAP requests.
  */
 public class CoapEntityHandler {
 
-  RdfStoreMessagebox rdfStoreMessagebox;
-  CartagoMessagebox cartagoMessagebox;
-  HttpInterfaceConfig httpConfig;
+  private final RdfStoreMessagebox rdfStoreMessagebox;
+  private final CartagoMessagebox cartagoMessagebox;
+  private final NetworkInterfaceConfig coapConfig;
+  private final NetworkInterfaceConfig httpConfig;
 
   /**
    * Default Constructor.
    */
-  public CoapEntityHandler(final Vertx vertx, final HttpInterfaceConfig httpConfig, final
-      EnvironmentConfig environmentConfig) {
+  public CoapEntityHandler(final Vertx vertx,
+                           final NetworkInterfaceConfig coapConfig,
+                           final NetworkInterfaceConfig httpConfig,
+                           final EnvironmentConfig environmentConfig) {
     this.rdfStoreMessagebox = new RdfStoreMessagebox(vertx.eventBus());
     this.cartagoMessagebox = new CartagoMessagebox(
         vertx.eventBus(),
         environmentConfig
     );
+    this.coapConfig = coapConfig;
     this.httpConfig = httpConfig;
-
   }
 
   /**
@@ -115,7 +118,7 @@ public class CoapEntityHandler {
    */
   public void handleDeleteEntity(CoapExchange exchange) {
     final var uri =
-        this.httpConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
+        this.coapConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
     System.out.println("deleting: " + uri);
   }
 }

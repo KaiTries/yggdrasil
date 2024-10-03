@@ -10,7 +10,7 @@ import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.apache.http.entity.ContentType;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
 /**
@@ -30,7 +30,7 @@ public class HttpServerVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) {
     final var httpConfig = this.vertx.sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
+        .<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .get("default");
     this.environmentConfig = this.vertx
       .sharedData()
@@ -58,7 +58,7 @@ public class HttpServerVerticle extends AbstractVerticle {
    * The HTTP API is defined here when creating the router.
    */
   private Router createRouter(
-      final HttpInterfaceConfig httpConfig,
+      final NetworkInterfaceConfig httpConfig,
       final EnvironmentConfig environmentConfig,
       final WebSubConfig notificationConfig
   ) {

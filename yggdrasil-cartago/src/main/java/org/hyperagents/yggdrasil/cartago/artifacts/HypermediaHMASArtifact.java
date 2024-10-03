@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.hyperagents.yggdrasil.cartago.CartagoDataBundle;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 import org.hyperagents.yggdrasil.utils.impl.HttpInterfaceConfigImpl;
@@ -49,10 +49,10 @@ public abstract class HypermediaHMASArtifact extends Artifact implements Hyperme
       .sharedData()
       .<String, WebSubConfig>getLocalMap("notification-config")
       .get(DEFAULT_CONFIG_VALUE);
-  private HttpInterfaceConfig httpConfig = Vertx.currentContext()
+  private NetworkInterfaceConfig httpConfig = Vertx.currentContext()
       .owner()
       .sharedData()
-      .<String, HttpInterfaceConfig>getLocalMap("http-config")
+      .<String, NetworkInterfaceConfig>getLocalMap("http-config")
       .get(DEFAULT_CONFIG_VALUE);
   private RepresentationFactory representationFactory =
       new RepresentationFactoryHMASImpl(this.httpConfig, this.notificationConfig);

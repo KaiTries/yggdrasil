@@ -3,8 +3,8 @@ package org.hyperagents.yggdrasil.utils.impl;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.JsonObjectUtils;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
 /**
@@ -27,7 +27,7 @@ public class WebSubConfigImpl implements WebSubConfig {
    * @param config The JSON object containing the WebSub configuration settings.
    * @param httpConfig The HTTP interface configuration.
    */
-  public WebSubConfigImpl(final JsonObject config, final HttpInterfaceConfig httpConfig) {
+  public WebSubConfigImpl(final JsonObject config, final NetworkInterfaceConfig httpConfig) {
     final var webSubConfig =
         JsonObjectUtils.getJsonObject(config, "notification-config", LOGGER::error);
     this.enabled =

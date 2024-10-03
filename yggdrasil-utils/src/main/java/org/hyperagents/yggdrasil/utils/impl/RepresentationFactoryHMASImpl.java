@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Set;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
@@ -40,7 +40,7 @@ public final class RepresentationFactoryHMASImpl implements RepresentationFactor
   private static final String HMAS = "https://purl.org/hmas/";
   private static final String JACAMO = "https://purl.org/hmas/jacamo/";
 
-  private final HttpInterfaceConfig httpConfig;
+  private final NetworkInterfaceConfig httpConfig;
 
   private final WebSubConfig notificationConfig;
 
@@ -62,7 +62,7 @@ public final class RepresentationFactoryHMASImpl implements RepresentationFactor
    * @param httpConfig httpConfig
    * @param notificationConfig notifConfig
    */
-  public RepresentationFactoryHMASImpl(final HttpInterfaceConfig httpConfig,
+  public RepresentationFactoryHMASImpl(final NetworkInterfaceConfig httpConfig,
                                        final WebSubConfig notificationConfig) {
     this.httpConfig = httpConfig;
     this.notificationConfig = notificationConfig;

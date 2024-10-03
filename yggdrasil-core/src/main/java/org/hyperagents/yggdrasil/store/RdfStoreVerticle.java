@@ -31,8 +31,8 @@ import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.store.impl.RdfStoreFactory;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.JsonObjectUtils;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RdfModelUtils;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
@@ -51,7 +51,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
   private static final String DEFAULT_CONFIG_VALUE = "default";
 
   private Messagebox<HttpNotificationDispatcherMessage> dispatcherMessagebox;
-  private HttpInterfaceConfig httpConfig;
+  private NetworkInterfaceConfig httpConfig;
   private RdfStore store;
 
   private RepresentationFactory representationFactory;
@@ -60,7 +60,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
   @Override
   public void start(final Promise<Void> startPromise) {
     this.httpConfig = this.vertx.sharedData()
-                                .<String, HttpInterfaceConfig>getLocalMap("http-config")
+                                .<String, NetworkInterfaceConfig>getLocalMap("http-config")
                                 .get(DEFAULT_CONFIG_VALUE);
 
     final WebSubConfig notificationConfig = this.vertx.sharedData()

@@ -6,7 +6,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
 /**
  * CoAP server verticle, manages lifetime of coap server.
@@ -14,13 +14,17 @@ import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 public class CoapServerVerticle extends AbstractVerticle {
 
   private CoapServer server;
-  private HttpInterfaceConfig httpConfig;
+  private NetworkInterfaceConfig coapConfig;
+  private NetworkInterfaceConfig httpConfig;
   private EnvironmentConfig environmentConfig;
 
   @Override
   public void start(final Promise<Void> startPromise) {
+    this.coapConfig = this.vertx.sharedData()
+        .<String, NetworkInterfaceConfig>getLocalMap("coap-config")
+        .get("default");
     this.httpConfig = this.vertx.sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
+        .<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .get("default");
     this.environmentConfig = this.vertx
         .sharedData()
@@ -39,8 +43,7 @@ public class CoapServerVerticle extends AbstractVerticle {
   private void startCoAPServer() {
     CoapConfig.register();
     UdpConfig.register();
-    final CoapEntityHandler handler = new CoapEntityHandler(vertx, httpConfig, environmentConfig);
-    this.server = new YggdrasilCoAPServer(handler);
+    this.server = new YggdrasilCoAPServer(vertx, coapConfig, httpConfig, environmentConfig);
     this.server.start();
   }
 }

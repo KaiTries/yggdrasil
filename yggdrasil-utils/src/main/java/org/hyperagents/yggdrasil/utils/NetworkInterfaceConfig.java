@@ -8,7 +8,7 @@ import io.vertx.core.shareddata.Shareable;
  * It provides methods to retrieve the host, port, base URI,
  * and various URIs related to workspaces, artifacts, agents, etc.
  */
-public interface HttpInterfaceConfig extends Shareable {
+public interface NetworkInterfaceConfig extends Shareable {
   /**
    * Gets the host of the HTTP interface.
    *

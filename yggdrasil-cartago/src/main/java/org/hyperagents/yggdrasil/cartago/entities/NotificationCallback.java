@@ -9,14 +9,14 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.HttpNotificationDispatcherMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMessage;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
 /**
  * Implementation for the CartagoCallback. Is used to define the actions taken when a CartagoEvent
  * is triggered.
  */
 public class NotificationCallback implements ICartagoCallback {
-  private final HttpInterfaceConfig httpConfig;
+  private final NetworkInterfaceConfig httpConfig;
   private final HttpNotificationDispatcherMessagebox messagebox;
   private final String workspaceName;
   private final String artifactName;
@@ -30,7 +30,7 @@ public class NotificationCallback implements ICartagoCallback {
    * @param artifactName  the artifactName.
    */
   public NotificationCallback(
-      final HttpInterfaceConfig httpConfig,
+      final NetworkInterfaceConfig httpConfig,
       final HttpNotificationDispatcherMessagebox messagebox,
       final String workspaceName,
       final String artifactName

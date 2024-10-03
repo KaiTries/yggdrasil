@@ -1,6 +1,6 @@
 package org.hyperagents.yggdrasil.utils.impl;
 
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
@@ -22,7 +22,7 @@ public final class RepresentationFactoryFactory {
   public static RepresentationFactory getRepresentationFactory(
       final String representationFactory,
       final WebSubConfig notificationConfig,
-      final HttpInterfaceConfig httpConfig) {
+      final NetworkInterfaceConfig httpConfig) {
     if (representationFactory == null) {
       return new RepresentationFactoryTDImplt(httpConfig, notificationConfig);
     }

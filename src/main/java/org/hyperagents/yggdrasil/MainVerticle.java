@@ -11,8 +11,9 @@ import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.model.parser.EnvironmentParser;
 import org.hyperagents.yggdrasil.store.RdfStoreVerticle;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
+import org.hyperagents.yggdrasil.utils.impl.CoAPInterfaceConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.EnvironmentConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.HttpInterfaceConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.WebSubConfigImpl;
@@ -32,8 +33,13 @@ public class MainVerticle extends AbstractVerticle {
 
       // HttpConfig
       final var httpConfig = new HttpInterfaceConfigImpl(c);
-      this.vertx.sharedData().<String, HttpInterfaceConfig>getLocalMap("http-config")
+      this.vertx.sharedData().<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .put(DEFAULT_CONF_VALUE, httpConfig);
+
+      // CoapConfig
+      final var coapConfig = new CoAPInterfaceConfigImpl(c);
+      this.vertx.sharedData().<String, NetworkInterfaceConfig>getLocalMap("coap-config")
+          .put(DEFAULT_CONF_VALUE, coapConfig);
 
       // EnvironmentConfig
       final var environmentConfig = new EnvironmentConfigImpl(c);
