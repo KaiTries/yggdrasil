@@ -114,13 +114,11 @@ public class CoapEntityHandler {
               )))
           .onSuccess(s -> {
             exchange.accept();
-            // start asynchronous processing, passing the exchange to a result callback
             Response response = new Response(CONTENT);
             response.setPayload(s.body());
             exchange.respond(response);
           }).onFailure(f -> {
             exchange.accept();
-            // start asynchronous processing, passing the exchange to a result callback
             Response response = new Response(CONTENT);
             response.setPayload(f.getMessage());
             exchange.respond(response);
@@ -135,7 +133,7 @@ public class CoapEntityHandler {
    */
   public void handleDeleteEntity(CoapExchange exchange) {
     final var uri =
-        this.coapConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
+        this.httpConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
     System.out.println("deleting: " + uri);
   }
 }
