@@ -18,7 +18,7 @@ import java.util.Set;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RdfModelUtils;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
@@ -33,7 +33,7 @@ public class RepresentationFactoryTDImplt implements RepresentationFactory {
   private static final String ARTIFACT_NAME_PARAM = "artifactName";
   private static final String ARTIFACT = "Artifact";
 
-  private final HttpInterfaceConfig httpConfig;
+  private final NetworkInterfaceConfig httpConfig;
   private final WebSubConfig notificationConfig;
 
   private static final String HMAS = "https://purl.org/hmas/";
@@ -46,7 +46,7 @@ public class RepresentationFactoryTDImplt implements RepresentationFactory {
   private static final String DELETE = HttpMethod.DELETE.name();
   private static final String PUT = HttpMethod.PUT.name();
 
-  public RepresentationFactoryTDImplt(final HttpInterfaceConfig httpConfig,
+  public RepresentationFactoryTDImplt(final NetworkInterfaceConfig httpConfig,
                                       final WebSubConfig notificationConfig) {
     this.httpConfig = httpConfig;
     this.notificationConfig = notificationConfig;

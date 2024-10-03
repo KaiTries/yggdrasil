@@ -18,7 +18,7 @@ import org.hyperagents.yggdrasil.eventbus.messageboxes.HttpNotificationDispatche
 import org.hyperagents.yggdrasil.eventbus.messageboxes.RdfStoreMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMessage;
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.impl.EnvironmentConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.HttpInterfaceConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.WebSubConfigImpl;
@@ -57,8 +57,8 @@ public class RdfStoreVerticleCreateTest {
   public void setUp(final Vertx vertx, final VertxTestContext ctx) {
     final var httpConfig = new HttpInterfaceConfigImpl(JsonObject.of());
     vertx.sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
-        .put("default", httpConfig);
+         .<String, NetworkInterfaceConfig>getLocalMap("http-config")
+         .put("default", httpConfig);
     final var notificationConfig = new WebSubConfigImpl(
         JsonObject.of(
             "notification-config",

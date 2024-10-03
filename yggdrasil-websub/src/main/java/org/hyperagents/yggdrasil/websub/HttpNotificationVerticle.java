@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.HttpNotificationDispatcherMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMessage;
 import org.hyperagents.yggdrasil.model.interfaces.Environment;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
 /**
@@ -41,7 +41,7 @@ public class HttpNotificationVerticle extends AbstractVerticle {
     final var webSubHubUri = notificationConfig.getWebSubHubUri();
     final var httpConfig =
         this.vertx.sharedData()
-                  .<String, HttpInterfaceConfig>getLocalMap("http-config")
+                  .<String, NetworkInterfaceConfig>getLocalMap("http-config")
                   .get("default");
     this.vertx
         .sharedData()

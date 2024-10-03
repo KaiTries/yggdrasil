@@ -40,7 +40,7 @@ import org.hyperagents.yggdrasil.eventbus.messages.CartagoMessage;
 import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMessage;
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RdfModelUtils;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
@@ -63,7 +63,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   private final Messagebox<CartagoMessage> cartagoMessagebox;
   private final Messagebox<RdfStoreMessage> rdfStoreMessagebox;
   private final Messagebox<HttpNotificationDispatcherMessage> notificationMessagebox;
-  private final HttpInterfaceConfig httpConfig;
+  private final NetworkInterfaceConfig httpConfig;
   private final WebSubConfig notificationConfig;
   private final RepresentationFactory representationFactory;
 
@@ -79,7 +79,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    */
   public HttpEntityHandler(
       final Vertx vertx,
-      final HttpInterfaceConfig httpConfig,
+      final NetworkInterfaceConfig httpConfig,
       final EnvironmentConfig environmentConfig,
       final WebSubConfig notificationConfig
   ) {

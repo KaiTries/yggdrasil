@@ -22,7 +22,7 @@ import org.hyperagents.yggdrasil.eventbus.messageboxes.RdfStoreMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.CartagoMessage;
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 import org.hyperagents.yggdrasil.utils.impl.EnvironmentConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.HttpInterfaceConfigImpl;
@@ -94,7 +94,7 @@ public class CartagoArtifactActionHandlerTest {
     this.helper = new HttpServerVerticleTestHelper(this.client, this.storeMessageQueue);
     final var httpConfig = new HttpInterfaceConfigImpl(JsonObject.of());
     vertx.sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
+        .<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .put("default", httpConfig);
     final var environmentConfig = new EnvironmentConfigImpl(JsonObject.of(
         "environment-config",

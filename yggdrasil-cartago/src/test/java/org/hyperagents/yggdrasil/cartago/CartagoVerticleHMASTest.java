@@ -31,7 +31,7 @@ import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMes
 import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.model.parser.EnvironmentParser;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.impl.EnvironmentConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.HttpInterfaceConfigImpl;
 import org.hyperagents.yggdrasil.utils.impl.WebSubConfigImpl;
@@ -95,7 +95,7 @@ public class CartagoVerticleHMASTest {
   public void setUp(final Vertx vertx, final VertxTestContext ctx) {
     final var httpConfig = new HttpInterfaceConfigImpl(JsonObject.of());
     vertx.sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
+        .<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .put(DEFAULT_CONFIG_VALUE, httpConfig);
     final var environmentConfig =
         new EnvironmentConfigImpl(JsonObject.of(

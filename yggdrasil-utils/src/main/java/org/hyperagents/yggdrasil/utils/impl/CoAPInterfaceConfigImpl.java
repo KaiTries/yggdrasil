@@ -7,11 +7,9 @@ import org.hyperagents.yggdrasil.utils.JsonObjectUtils;
 import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
 /**
- * Implementation of the NetworkInterfaceConfig interface
- * that provides configuration for an HTTP interface.
+ * Implementation of the NetworkInterfaceConfig interface.
  */
-@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
-public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
+public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   private static final Logger LOGGER = LogManager.getLogger(HttpInterfaceConfigImpl.class);
 
   private final String host;
@@ -24,17 +22,17 @@ public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
    *
    * @param config The JSON configuration object.
    */
-  public HttpInterfaceConfigImpl(final JsonObject config) {
-    final var httpConfig = JsonObjectUtils.getJsonObject(config, "http-config", LOGGER::error);
-    this.host = httpConfig.flatMap(c -> JsonObjectUtils.getString(c, "host", LOGGER::error))
-      .orElse("0.0.0.0");
-    this.port = httpConfig.flatMap(c -> JsonObjectUtils.getInteger(c, "port", LOGGER::error))
-      .orElse(8080);
+  public CoAPInterfaceConfigImpl(final JsonObject config) {
+    final var coapConfig = JsonObjectUtils.getJsonObject(config, "coap-config", LOGGER::error);
+    this.host = coapConfig.flatMap(c -> JsonObjectUtils.getString(c, "host", LOGGER::error))
+        .orElse("0.0.0.0");
+    this.port = coapConfig.flatMap(c -> JsonObjectUtils.getInteger(c, "port", LOGGER::error))
+        .orElse(5683);
 
     final String baseUri1;
-    baseUri1 = httpConfig.flatMap(c -> JsonObjectUtils.getString(c, "base-uri", LOGGER::error))
+    baseUri1 = coapConfig.flatMap(c -> JsonObjectUtils.getString(c, "base-uri", LOGGER::error))
         .orElseGet(()
-            -> "http://" + (this.host.equals("0.0.0.0") ? "localhost" : this.host) + ":"
+            -> "coap://" + (this.host.equals("0.0.0.0") ? "localhost" : this.host) + ":"
             + this.port + "/");
     this.baseUriTrailingSlash = baseUri1.endsWith("/") ? baseUri1 : baseUri1 + "/";
     this.baseUri = baseUri1.endsWith("/") ? baseUri1.substring(0, baseUri1.length() - 1) : baseUri1;
@@ -61,51 +59,35 @@ public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
-  public String getWorkspacesUriTrailingSlash() {
+  public String getWorkspacesUri() {
     return this.baseUriTrailingSlash + "workspaces/";
   }
 
   @Override
-  public String getWorkspacesUri() {
-    return this.baseUriTrailingSlash + "workspaces";
-  }
-
-  @Override
   public String getWorkspaceUriTrailingSlash(final String workspaceName) {
-    return this.getWorkspacesUriTrailingSlash() + validateInput(workspaceName) + "/";
+    return this.getWorkspacesUri() + validateInput(workspaceName) + "/";
   }
 
   @Override
   public String getWorkspaceUri(final String workspaceName) {
-    return this.getWorkspacesUriTrailingSlash() + validateInput(workspaceName);
+    return this.getWorkspacesUri() + validateInput(workspaceName);
   }
 
   @Override
   public String getArtifactsUri(final String workspaceName) {
-    return this.getWorkspaceUriTrailingSlash(workspaceName) + "artifacts";
-  }
-
-  @Override
-  public String getArtifactsUriTrailingSlash(final String workspaceName) {
     return this.getWorkspaceUriTrailingSlash(workspaceName) + "artifacts/";
   }
 
   @Override
   public String getArtifactUriTrailingSlash(final String workspaceName, final String artifactName) {
     final var cleanArtifactName = validateInput(artifactName);
-    return this.getArtifactsUriTrailingSlash(workspaceName) + cleanArtifactName + "/";
+    return this.getArtifactsUri(workspaceName) + cleanArtifactName + "/";
   }
 
   @Override
   public String getArtifactUri(final String workspaceName, final String artifactName) {
     final var cleanArtifactName = validateInput(artifactName);
-    return this.getArtifactsUriTrailingSlash(workspaceName) + cleanArtifactName;
-  }
-
-  @Override
-  public String getArtifactUriFocusing(final String workspaceName, final String artifactName) {
-    final var cleanArtifactName = validateInput(artifactName);
-    return this.getArtifactsUriTrailingSlash(workspaceName) + cleanArtifactName + "/focus";
+    return this.getArtifactsUri(workspaceName) + cleanArtifactName;
   }
 
   @Override
@@ -131,8 +113,8 @@ public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
     return this.baseUriTrailingSlash + "artifacts/" + cleanAgentName + "/";
   }
 
-  // TODO: Add better validation
 
+  // TODO: Add better validation
   /**
    * Validate the input string by removing any slashes.
    * The name cannot have any slashes since we use them as separators in the URI.
@@ -147,4 +129,3 @@ public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
     return stringInput.replaceAll("/", "");
   }
 }
-

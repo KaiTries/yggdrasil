@@ -50,8 +50,8 @@ import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMes
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
-import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.JsonObjectUtils;
+import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.RepresentationFactory;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 import org.hyperagents.yggdrasil.utils.impl.RepresentationFactoryFactory;
@@ -66,7 +66,7 @@ public class CartagoVerticle extends AbstractVerticle {
   private static final String DEFAULT_CONFIG_VALUE = "default";
   private static final String YGGDRASIL = "yggdrasil";
 
-  private HttpInterfaceConfig httpConfig;
+  private NetworkInterfaceConfig httpConfig;
   private WorkspaceRegistry workspaceRegistry;
   private RepresentationFactory representationFactory;
 
@@ -80,7 +80,7 @@ public class CartagoVerticle extends AbstractVerticle {
   public void start(final Promise<Void> startPromise) {
     this.httpConfig = this.vertx
         .sharedData()
-        .<String, HttpInterfaceConfig>getLocalMap("http-config")
+        .<String, NetworkInterfaceConfig>getLocalMap("http-config")
         .get(DEFAULT_CONFIG_VALUE);
     this.workspaceRegistry = new WorkspaceRegistryImpl();
     this.registry = new HypermediaArtifactRegistry();
