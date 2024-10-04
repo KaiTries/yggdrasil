@@ -554,7 +554,7 @@ public final class RepresentationFactoryHMASImpl implements RepresentationFactor
       .setNamespace("hmas", HMAS)
       .setNamespace("jacamo", JACAMO)
       .setNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-      .setNamespace("websub", "http://www.example.org/websub#")
+      .setNamespace("websub", HMAS + "websub/")
       .write();
   }
 }
