@@ -4,7 +4,6 @@ import static org.eclipse.californium.core.coap.CoAP.ResponseCode.CONTENT;
 
 import io.vertx.core.Vertx;
 import java.util.List;
-import java.util.Objects;
 import org.eclipse.californium.core.coap.Option;
 import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Response;
@@ -25,6 +24,7 @@ public class CoapEntityHandler {
   private final CartagoMessagebox cartagoMessagebox;
   private final NetworkInterfaceConfig coapConfig;
   private final NetworkInterfaceConfig httpConfig;
+  private final boolean environment;
 
   /**
    * Default Constructor.
@@ -38,6 +38,7 @@ public class CoapEntityHandler {
         vertx.eventBus(),
         environmentConfig
     );
+    this.environment = environmentConfig.isEnabled();
     this.coapConfig = coapConfig;
     this.httpConfig = httpConfig;
   }
@@ -52,10 +53,12 @@ public class CoapEntityHandler {
     this.rdfStoreMessagebox
         .sendMessage(new RdfStoreMessage.GetEntity(uri)).onSuccess(
             s -> {
+              final var responseBody = s.body().replace(this.httpConfig.getBaseUriTrailingSlash(),
+                  this.coapConfig.getBaseUriTrailingSlash());
               exchange.accept();
               // start asynchronous processing, passing the exchange to a result callback
               Response response = new Response(CONTENT);
-              response.setPayload(s.body());
+              response.setPayload(responseBody);
               exchange.respond(response);
             }
         )
@@ -73,67 +76,103 @@ public class CoapEntityHandler {
    * Handles post requests to a specific workspace.
    */
   public void handlePostWorkspace(final CoapExchange exchange) {
-    // check if it is trying to do /join or post to workspace
+    OptionSet optionSet = exchange.advanced().getRequest().getOptions();
+    List<Option> options = optionSet.asSortedList();
+
+    final var agentId = options.stream().filter(o -> o.getNumber() == 500)
+        .findFirst()
+        .orElseThrow()
+        .getStringValue();
+
+    final var agentBodyName = options.stream().filter(o -> o.getNumber() == 600)
+        .findFirst()
+        .orElseThrow()
+        .getStringValue();
+
+    // check what the last part of the uri is
     final var uriPathString = exchange.getRequestOptions().getUriPathString().split("/");
-    if (Objects.equals(uriPathString[uriPathString.length - 1], "join")) {
-      final var metadata = exchange.getRequestText();
-
-      OptionSet optionSet = exchange.advanced().getRequest().getOptions();
-      List<Option> options = optionSet.asSortedList();
-
-      final var agentId = options.stream().filter(o -> o.getNumber() == 500)
-          .findFirst()
-          .orElseThrow()
-          .getStringValue();
-
-      final var agentBodyName = options.stream().filter(o -> o.getNumber() == 600)
-          .findFirst()
-          .orElseThrow()
-          .getStringValue();
-
-      final var workspaceName = uriPathString[uriPathString.length - 2];
-
-      this.cartagoMessagebox
-          .sendMessage(new CartagoMessage.JoinWorkspace(
-              agentId,
-              agentBodyName,
-              workspaceName
-          ))
-          .compose(response -> this.rdfStoreMessagebox
-              .sendMessage(new RdfStoreMessage.CreateBody(
-                  workspaceName,
-                  agentId,
-                  agentBodyName,
-                  response.body()
-              ))
-          )
-          .compose(r -> this.rdfStoreMessagebox
-              .sendMessage(new RdfStoreMessage.UpdateEntity(
-                  this.httpConfig.getAgentBodyUri(workspaceName, agentBodyName),
-                  metadata
-              )))
-          .onSuccess(s -> {
-            exchange.accept();
-            Response response = new Response(CONTENT);
-            response.setPayload(s.body());
-            exchange.respond(response);
-          }).onFailure(f -> {
-            exchange.accept();
-            Response response = new Response(CONTENT);
-            response.setPayload(f.getMessage());
-            exchange.respond(response);
-          });
-    } else {
-      exchange.reject();
+    switch (uriPathString[uriPathString.length - 1]) {
+      case "join":
+        this.handleJoinWorkspace(exchange, uriPathString, agentId, agentBodyName);
+        break;
+      case "leave":
+        this.handleLeaveWorkspace(exchange, uriPathString, agentId, agentBodyName);
+        break;
+      default:
+        exchange.reject();
+        break;
     }
   }
 
   /**
-   * Handles the deletion of all entities.
+   * Handles join requests to a specific workspace.
    */
-  public void handleDeleteEntity(CoapExchange exchange) {
-    final var uri =
-        this.httpConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
-    System.out.println("deleting: " + uri);
+  public void handleJoinWorkspace(CoapExchange exchange, final String[] uriPathString,
+                                  final String agentId, final String agentBodyName) {
+    final var metadata = exchange.getRequestText();
+    final var workspaceName = uriPathString[uriPathString.length - 2];
+
+    this.cartagoMessagebox
+        .sendMessage(new CartagoMessage.JoinWorkspace(
+            agentId,
+            agentBodyName,
+            workspaceName
+        ))
+        .compose(response -> this.rdfStoreMessagebox
+            .sendMessage(new RdfStoreMessage.CreateBody(
+                workspaceName,
+                agentId,
+                agentBodyName,
+                response.body()
+            ))
+        )
+        .compose(r -> this.rdfStoreMessagebox
+            .sendMessage(new RdfStoreMessage.UpdateEntity(
+                this.httpConfig.getAgentBodyUri(workspaceName, agentBodyName),
+                metadata
+            )))
+        .onSuccess(s -> {
+          exchange.accept();
+          Response response = new Response(CONTENT);
+          response.setPayload(s.body());
+          exchange.respond(response);
+        }).onFailure(f -> {
+          exchange.accept();
+          Response response = new Response(CONTENT);
+          response.setPayload(f.getMessage());
+          exchange.respond(response);
+        });
+  }
+
+  /**
+   * Handles leave requests to a specific workspace.
+   */
+  public void handleLeaveWorkspace(CoapExchange exchange, final String[] uriPathString,
+                                   final String agentId, final String agentBodyName) {
+    final var workspaceName = uriPathString[uriPathString.length - 2];
+
+    this.cartagoMessagebox
+        .sendMessage(new CartagoMessage.LeaveWorkspace(
+            agentId,
+            workspaceName
+        ))
+        .compose(r -> this.rdfStoreMessagebox
+            .sendMessage(new RdfStoreMessage.DeleteEntity(
+                this.httpConfig.getAgentBodyUriTrailingSlash(
+                    workspaceName,
+                    agentBodyName
+                )
+            )))
+        .onSuccess(s -> {
+          exchange.accept();
+          Response response = new Response(CONTENT);
+          response.setPayload(s.body());
+          exchange.respond(response);
+        }).onFailure(f -> {
+          exchange.accept();
+          Response response = new Response(CONTENT);
+          response.setPayload(f.getMessage());
+          exchange.respond(response);
+        });
   }
 }

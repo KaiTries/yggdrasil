@@ -99,7 +99,6 @@ public class YggdrasilCoAPServer extends CoapServer {
 
     @Override
     public void handleDELETE(final CoapExchange exchange) {
-      handler.handleDeleteEntity(exchange);
 
     }
 
