@@ -12,10 +12,11 @@ import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   private static final Logger LOGGER = LogManager.getLogger(HttpInterfaceConfigImpl.class);
 
-  private final String host;
-  private final String baseUri;
-  private final String baseUriTrailingSlash;
-  private final int port;
+  private String host;
+  private String baseUri;
+  private String baseUriTrailingSlash;
+  private final boolean enabled;
+  private int port;
 
   /**
    * Constructs a new HttpInterfaceConfigImpl object with the specified configuration.
@@ -24,6 +25,12 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
    */
   public CoAPInterfaceConfigImpl(final JsonObject config) {
     final var coapConfig = JsonObjectUtils.getJsonObject(config, "coap-config", LOGGER::error);
+    this.enabled =
+        coapConfig.flatMap(c -> JsonObjectUtils.getBoolean(c, "enabled", LOGGER::error))
+            .orElse(false);
+    if (!this.enabled) {
+      return;
+    }
     this.host = coapConfig.flatMap(c -> JsonObjectUtils.getString(c, "host", LOGGER::error))
         .orElse("0.0.0.0");
     this.port = coapConfig.flatMap(c -> JsonObjectUtils.getInteger(c, "port", LOGGER::error))
@@ -127,5 +134,9 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
       return "";
     }
     return stringInput.replaceAll("/", "");
+  }
+
+  public boolean isEnabled() {
+    return this.enabled;
   }
 }

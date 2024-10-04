@@ -124,7 +124,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    * @param routingContext the routingContext
    */
   public void handleGetEntity(final RoutingContext routingContext) {
-    final var entityIri = routingContext.request().absoluteURI();
+    final var entityIri = this.httpConfig.getBaseUri() + routingContext.request().path();
     this.rdfStoreMessagebox
         .sendMessage(new RdfStoreMessage.GetEntity(entityIri))
         .onComplete(
