@@ -57,7 +57,9 @@ public class MainVerticle extends AbstractVerticle {
 
       // start the verticles
       return this.vertx.deployVerticle(new HttpServerVerticle()).compose(
-          v -> this.vertx.deployVerticle(new CoapServerVerticle())
+          v -> coapConfig.isEnabled()
+              ? this.vertx.deployVerticle(new CoapServerVerticle())
+              : Future.succeededFuture()
       ).compose(
         v -> this.vertx.deployVerticle(new RdfStoreVerticle(),
           new DeploymentOptions().setConfig(c))).compose(v -> notificationConfig.isEnabled()
