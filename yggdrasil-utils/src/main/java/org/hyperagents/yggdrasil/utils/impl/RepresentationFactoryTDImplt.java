@@ -348,7 +348,7 @@ public class RepresentationFactoryTDImplt implements RepresentationFactory {
         .setNamespace("hmas", HMAS)
         .setNamespace("ex", "http://example.org/")
         .setNamespace("jacamo", JACAMO)
-        .setNamespace("websub", "http://example.org/websub#")
+        .setNamespace("websub", HMAS + "websub/")
         .write();
   }
 }

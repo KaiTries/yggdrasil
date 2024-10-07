@@ -124,7 +124,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    * @param routingContext the routingContext
    */
   public void handleGetEntity(final RoutingContext routingContext) {
-    final var entityIri = routingContext.request().absoluteURI();
+    final var entityIri = this.httpConfig.getBaseUri() + routingContext.request().path();
     this.rdfStoreMessagebox
         .sendMessage(new RdfStoreMessage.GetEntity(entityIri))
         .onComplete(
@@ -144,7 +144,8 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   public void handleCreateWorkspaceJson(final RoutingContext context) {
     final var workspaceName = context.request().getHeader(SLUG_HEADER);
     final var agentId = context.request().getHeader(AGENT_WEBID_HEADER);
-    final var requestUri = context.request().absoluteURI();
+    final var requestUri =
+        this.httpConfig.getBaseUri() + context.request().path();
 
     if (agentId == null) {
       context.response().setStatusCode(HttpStatus.SC_UNAUTHORIZED).end();
@@ -204,7 +205,8 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    */
   public void handleCreateArtifactJson(final RoutingContext context, final String agentId) {
     final var representation = context.body().asString();
-    final var requestUri = context.request().absoluteURI();
+    final var requestUri =
+        this.httpConfig.getBaseUri() + context.request().path();
     final var artifactName =
         ((JsonObject) Json.decodeValue(representation)).getString("artifactName");
 
@@ -251,7 +253,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    */
   public void handleCreateArtifactTurtle(final RoutingContext context,
                                          final String entityRepresentation) {
-    final var requestUri = context.request().absoluteURI();
+    final var requestUri = this.httpConfig.getBaseUri() + context.request().path();
 
     this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetEntityIri(requestUri,
             context.request().getHeader(SLUG_HEADER)))
