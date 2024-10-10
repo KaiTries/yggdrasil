@@ -66,6 +66,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   private final NetworkInterfaceConfig httpConfig;
   private final WebSubConfig notificationConfig;
   private final RepresentationFactory representationFactory;
+  private final HashMap<String, String> wellKnownResources;
 
   private final boolean environment;
 
@@ -85,6 +86,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   ) {
     this.httpConfig = httpConfig;
     this.notificationConfig = notificationConfig;
+    this.wellKnownResources = new HashMap<>();
     this.cartagoMessagebox = new CartagoMessagebox(
         vertx.eventBus(),
         environmentConfig
@@ -100,6 +102,32 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
         RepresentationFactoryFactory.getRepresentationFactory(environmentConfig.getOntology(),
             notificationConfig,
             httpConfig);
+  }
+
+  /**
+   * Handles the maintanance of the well-known resources.
+   *
+   * @param context routingContext
+   */
+  public void handleWellKnown(final RoutingContext context) {
+    if (context.request().method() == HttpMethod.GET) {
+      final var path = context.request().path();
+      final var resource = this.wellKnownResources.get(path);
+      if (resource != null) {
+        context.response().setStatusCode(HttpStatus.SC_OK).end(resource);
+      } else {
+        context.response().setStatusCode(HttpStatus.SC_NOT_FOUND).end();
+      }
+    } else if (context.request().method() == HttpMethod.POST) {
+      final var path = context.request().path();
+      final var resource = context.body().asString();
+      this.wellKnownResources.put(path, resource);
+      context.response().setStatusCode(HttpStatus.SC_CREATED).end();
+    } else {
+      context.response().setStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED).end();
+    }
+
+
   }
 
   /**
@@ -231,13 +259,14 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
                         this.getHeaders(requestUri + nameResponse.body())))
             )
             .onFailure(r -> {
-                  if (r instanceof ReplyException e) {
-                    context.response().setStatusCode(e.failureCode()).end();
-                  } else {
-                    context.response().setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).end();
-                  }
-            }
-            ))
+
+              if (r instanceof ReplyException e) {
+                context.response().setStatusCode(e.failureCode()).end();
+              } else {
+                context.response().setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).end();
+              }
+            })
+    )
     ;
   }
 
@@ -269,7 +298,8 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
                         false
                     )
                 )).onComplete(
-                  response -> this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.UpdateEntity(
+                    response -> this.rdfStoreMessagebox.sendMessage(
+                        new RdfStoreMessage.UpdateEntity(
                         requestUri + actualEntityName.body(),
                         entityRepresentation
                     )
