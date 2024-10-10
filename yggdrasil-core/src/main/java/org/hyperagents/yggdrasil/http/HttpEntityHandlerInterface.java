@@ -42,4 +42,6 @@ public interface HttpEntityHandlerInterface {
   void handleQuery(final RoutingContext routingContext);
 
   void handleAction(final RoutingContext routingContext);
+
+  void handleWellKnown(RoutingContext routingContext);
 }
