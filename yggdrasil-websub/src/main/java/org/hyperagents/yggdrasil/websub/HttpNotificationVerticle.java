@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hyperagents.yggdrasil.eventbus.messageboxes.HttpNotificationDispatcherMessagebox;
 import org.hyperagents.yggdrasil.eventbus.messages.HttpNotificationDispatcherMessage;
-import org.hyperagents.yggdrasil.model.Environment;
+import org.hyperagents.yggdrasil.model.interfaces.Environment;
 import org.hyperagents.yggdrasil.utils.HttpInterfaceConfig;
 import org.hyperagents.yggdrasil.utils.WebSubConfig;
 
@@ -48,15 +48,16 @@ public class HttpNotificationVerticle extends AbstractVerticle {
         .<String, Environment>getLocalMap("environment")
         .get("default")
         .getWorkspaces()
-        .forEach(w -> w.getAgents()
-                       .forEach(a -> a.getFocusedArtifactNames()
-                                      .forEach(artifactName -> this.registry.addCallbackIri(
-                                        httpConfig.getArtifactUri(w.getName(), artifactName),
-                                        a.getAgentCallbackUri()
-                                      ))
-                       )
-        );
-
+        .forEach(w -> w.getArtifacts()
+          .forEach(
+            a -> a.getFocusedBy().forEach(
+              agentName -> this.registry.addCallbackIri(
+                httpConfig.getArtifactUri(w.getName(), a.getName()),
+                w.getAgents().stream().filter(ag -> ag.getName().equals(agentName))
+                  .findFirst().orElseThrow().getAgentCallbackUri().orElseThrow()
+                )
+              )
+          ));
     final var ownMessagebox = new HttpNotificationDispatcherMessagebox(
         this.vertx.eventBus(),
         notificationConfig

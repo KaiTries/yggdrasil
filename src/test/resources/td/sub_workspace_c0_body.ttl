@@ -5,18 +5,74 @@
 @prefix ex: <http://example.org/> .
 @prefix wotsec: <https://www.w3.org/2019/wot/security#> .
 @prefix htv: <http://www.w3.org/2011/http#> .
-@prefix td: <https://www.w3.org/2019/wot/td#> .
 @prefix jacamo: <https://purl.org/hmas/jacamo/> .
+@prefix td: <https://www.w3.org/2019/wot/td#> .
 
 <workspaces/sub/#workspace> a td:Thing, hmas:Workspace;
   td:title "sub";
   td:hasSecurityConfiguration [ a wotsec:NoSecurityScheme
     ];
-  td:hasActionAffordance [ a td:ActionAffordance, jacamo:CreateSubWorkspace;
-      td:name "createSubWorkspace";
+  td:hasActionAffordance [ a td:ActionAffordance, jacamo:makeSubWorkspace;
+      td:name "createSubWorkspaceJson";
       td:hasForm [
           htv:methodName "POST";
           hctl:hasTarget <workspaces/sub>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:createSubWorkspace;
+      td:name "createSubWorkspaceTurtle";
+      td:hasForm [
+          htv:methodName "POST";
+          hctl:hasTarget <workspaces/sub>;
+          hctl:forContentType "text/turtle";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:PerceiveWorkspace;
+      td:name "getWorkspaceRepresentation";
+      td:hasForm [
+          htv:methodName "GET";
+          hctl:hasTarget <workspaces/sub>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:UpdateWorkspace;
+      td:name "updateWorkspaceRepresentation";
+      td:hasForm [
+          htv:methodName "PUT";
+          hctl:hasTarget <workspaces/sub>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:DeleteWorkspace;
+      td:name "deleteWorkspaceRepresentation";
+      td:hasForm [
+          htv:methodName "DELETE";
+          hctl:hasTarget <workspaces/sub>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:createArtifact;
+      td:name "createArtifact";
+      td:hasForm [
+          htv:methodName "POST";
+          hctl:hasTarget <workspaces/sub/artifacts/>;
+          hctl:forContentType "text/turtle";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:JoinWorkspace;
+      td:name "joinWorkspace";
+      td:hasForm [
+          htv:methodName "POST";
+          hctl:hasTarget <workspaces/sub/join>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction
+        ]
+    ], [ a td:ActionAffordance, jacamo:QuitWorkspace;
+      td:name "quitWorkspace";
+      td:hasForm [
+          htv:methodName "POST";
+          hctl:hasTarget <workspaces/sub/leave>;
           hctl:forContentType "application/json";
           hctl:hasOperationType td:invokeAction
         ]
@@ -38,22 +94,6 @@
               js:propertyName "artifactName"
             ];
           js:required "artifactClass", "artifactName"
-        ]
-    ], [ a td:ActionAffordance, jacamo:JoinWorkspace;
-      td:name "joinWorkspace";
-      td:hasForm [
-          htv:methodName "POST";
-          hctl:hasTarget <workspaces/sub/join>;
-          hctl:forContentType "application/json";
-          hctl:hasOperationType td:invokeAction
-        ]
-    ], [ a td:ActionAffordance, jacamo:QuitWorkspace;
-      td:name "quitWorkspace";
-      td:hasForm [
-          htv:methodName "POST";
-          hctl:hasTarget <workspaces/sub/leave>;
-          hctl:forContentType "application/json";
-          hctl:hasOperationType td:invokeAction
         ]
     ], [ a td:ActionAffordance, jacamo:Focus;
       td:name "focus";
@@ -109,13 +149,13 @@
         ]
     ];
   hmas:isContainedIn <workspaces/test/#workspace>;
-  hmas:contains <workspaces/sub/artifacts/c0/#artifact>, <workspaces/sub/artifacts/body_test_agent/#artifact> .
+  hmas:contains <workspaces/sub/artifacts/body_test_agent/#artifact>, <workspaces/sub/artifacts/c0/#artifact> .
 
 <workspaces/sub> a hmas:ResourceProfile;
   hmas:isProfileOf <workspaces/sub/#workspace> .
 
 <workspaces/test/#workspace> a hmas:Workspace .
 
-<workspaces/sub/artifacts/c0/#artifact> a hmas:Artifact .
-
 <workspaces/sub/artifacts/body_test_agent/#artifact> a hmas:Artifact, jacamo:Body .
+
+<workspaces/sub/artifacts/c0/#artifact> a hmas:Artifact .

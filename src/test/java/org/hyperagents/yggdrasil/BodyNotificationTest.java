@@ -99,7 +99,7 @@ public class BodyNotificationTest {
     this.client = WebClient.create(vertx);
     this.callbackMessages =
         Stream.generate(Promise::<Map.Entry<String, String>>promise)
-            .limit(5)
+            .limit(6)
             .collect(Collectors.toList());
     this.promiseIndex = 0;
     vertx
@@ -158,6 +158,11 @@ public class BodyNotificationTest {
             Path.of(ClassLoader.getSystemResource("td/test_agent_body_test_td.ttl").toURI()),
             StandardCharsets.UTF_8
         );
+    final var workspaceWithBodyRepresentation =
+        Files.readString(
+            Path.of(ClassLoader.getSystemResource("td/test_workspace_body_td.ttl").toURI()),
+            StandardCharsets.UTF_8
+        );
     final var workspaceWithArtifactAndBodyRepresentation =
         Files.readString(
             Path.of(ClassLoader.getSystemResource("td/test_workspace_c0_body_td.ttl").toURI()),
@@ -178,8 +183,54 @@ public class BodyNotificationTest {
               workspaceRepresentation,
               r.bodyAsString()
           );
-        })
-        .compose(r -> this.client
+        }).compose(r -> this.client
+            .post(TEST_PORT, TEST_HOST, HUB_PATH)
+            .sendJsonObject(JsonObject.of(
+                HUB_MODE_PARAM,
+                HUB_MODE_SUBSCRIBE,
+                HUB_TOPIC_PARAM,
+                this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME),
+                HUB_CALLBACK_PARAM,
+                CALLBACK_URL
+            )))
+        .onSuccess(r -> {
+          Assertions.assertEquals(
+              HttpStatus.SC_OK,
+              r.statusCode(),
+              OK_STATUS_MESSAGE
+          );
+          Assertions.assertNull(r.body(), RESPONSE_BODY_EMPTY_MESSAGE);
+        }).compose(r -> this.client
+            .post(TEST_PORT, TEST_HOST, HUB_PATH)
+            .sendJsonObject(JsonObject.of(
+                HUB_MODE_PARAM,
+                HUB_MODE_SUBSCRIBE,
+                HUB_TOPIC_PARAM,
+                this.getUrl(
+                    WORKSPACES_PATH
+                        + MAIN_WORKSPACE_NAME
+                        + ARTIFACTS_PATH
+                ),
+                HUB_CALLBACK_PARAM,
+                CALLBACK_URL
+            ))
+        ).onSuccess(r -> {
+          Assertions.assertEquals(
+              HttpStatus.SC_OK,
+              r.statusCode(),
+              OK_STATUS_MESSAGE
+          );
+          Assertions.assertNull(r.body(), RESPONSE_BODY_EMPTY_MESSAGE);
+        }).compose(r -> this.client
+            .post(
+                TEST_PORT,
+                TEST_HOST,
+                WORKSPACES_PATH + MAIN_WORKSPACE_NAME + "/join"
+            )
+            .putHeader(AGENT_ID_HEADER, TEST_AGENT_ID)
+            .putHeader(AGENT_LOCALNAME_HEADER, TEST_AGENT_NAME)
+            .send()
+        ).compose(r -> this.client
             .post(
                 TEST_PORT,
                 TEST_HOST,
@@ -203,66 +254,6 @@ public class BodyNotificationTest {
               r.bodyAsString()
           );
         })
-        .compose(r -> this.client
-            .post(TEST_PORT, TEST_HOST, HUB_PATH)
-            .sendJsonObject(JsonObject.of(
-                HUB_MODE_PARAM,
-                HUB_MODE_SUBSCRIBE,
-                HUB_TOPIC_PARAM,
-                this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME),
-                HUB_CALLBACK_PARAM,
-                CALLBACK_URL
-            )))
-        .onSuccess(r -> {
-          Assertions.assertEquals(
-              HttpStatus.SC_OK,
-              r.statusCode(),
-              OK_STATUS_MESSAGE
-          );
-          Assertions.assertNull(r.body(), RESPONSE_BODY_EMPTY_MESSAGE);
-        })
-        .compose(r -> this.client
-            .post(TEST_PORT, TEST_HOST, HUB_PATH)
-            .sendJsonObject(JsonObject.of(
-                HUB_MODE_PARAM,
-                HUB_MODE_SUBSCRIBE,
-                HUB_TOPIC_PARAM,
-                this.getUrl(
-                    WORKSPACES_PATH
-                        + MAIN_WORKSPACE_NAME
-                        + ARTIFACTS_PATH
-                ),
-                HUB_CALLBACK_PARAM,
-                CALLBACK_URL
-            )))
-        .onSuccess(r -> {
-          Assertions.assertEquals(
-              HttpStatus.SC_OK,
-              r.statusCode(),
-              OK_STATUS_MESSAGE
-          );
-          Assertions.assertNull(r.body(), RESPONSE_BODY_EMPTY_MESSAGE);
-        })
-        .compose(r -> this.client
-            .post(
-                TEST_PORT,
-                TEST_HOST,
-                WORKSPACES_PATH + MAIN_WORKSPACE_NAME + "/join"
-            )
-            .putHeader(AGENT_ID_HEADER, TEST_AGENT_ID)
-            .putHeader(AGENT_LOCALNAME_HEADER, TEST_AGENT_NAME)
-            .send())
-        .onSuccess(r -> {
-          Assertions.assertEquals(
-              HttpStatus.SC_OK,
-              r.statusCode(),
-              OK_STATUS_MESSAGE
-          );
-          assertEqualsThingDescriptions(
-              testAgentBodyRepresentation,
-              r.bodyAsString()
-          );
-        })
         .compose(r -> this.callbackMessages.getFirst().future())
         .onSuccess(m -> {
           Assertions.assertEquals(
@@ -271,7 +262,7 @@ public class BodyNotificationTest {
               URIS_EQUAL_MESSAGE
           );
           assertEqualsThingDescriptions(
-              workspaceWithArtifactAndBodyRepresentation,
+              workspaceWithBodyRepresentation,
               m.getValue()
           );
         })
@@ -287,6 +278,30 @@ public class BodyNotificationTest {
               m.getValue()
           );
         })
+        .compose(r -> this.callbackMessages.get(2).future())
+        .onSuccess(m -> {
+          Assertions.assertEquals(
+              this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME),
+              m.getKey(),
+              URIS_EQUAL_MESSAGE
+          );
+          assertEqualsThingDescriptions(
+              workspaceWithArtifactAndBodyRepresentation,
+              m.getValue()
+          );
+        })
+        .compose(r -> this.callbackMessages.get(3).future())
+        .onSuccess(m -> {
+          Assertions.assertEquals(
+              this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME + ARTIFACTS_PATH),
+              m.getKey(),
+              URIS_EQUAL_MESSAGE
+          );
+          assertEqualsThingDescriptions(
+              artifactRepresentation,
+              m.getValue()
+          );
+        })
         .compose(r -> this.client
             .post(TEST_PORT, TEST_HOST, HUB_PATH)
             .sendJsonObject(JsonObject.of(
@@ -298,7 +313,6 @@ public class BodyNotificationTest {
                         + MAIN_WORKSPACE_NAME
                         + ARTIFACTS_PATH
                         + TEST_AGENT_BODY_NAME
-                        + "/"
                 ),
                 HUB_CALLBACK_PARAM,
                 CALLBACK_URL
@@ -332,7 +346,7 @@ public class BodyNotificationTest {
           );
           Assertions.assertNull(r.bodyAsString(), RESPONSE_BODY_EMPTY_MESSAGE);
         })
-        .compose(r -> this.callbackMessages.get(2).future())
+        .compose(r -> this.callbackMessages.get(4).future())
         .onSuccess(m -> {
           Assertions.assertEquals(
               this.getUrl(
@@ -340,7 +354,6 @@ public class BodyNotificationTest {
                       + MAIN_WORKSPACE_NAME
                       + ARTIFACTS_PATH
                       + TEST_AGENT_BODY_NAME
-                      + "/"
               ),
               m.getKey(),
               URIS_EQUAL_MESSAGE
@@ -360,7 +373,7 @@ public class BodyNotificationTest {
               REPRESENTATIONS_EQUAL_MESSAGE
           );
         })
-        .compose(r -> this.callbackMessages.get(3).future())
+        .compose(r -> this.callbackMessages.get(5).future())
         .onSuccess(m -> {
           Assertions.assertEquals(
               this.getUrl(
@@ -368,7 +381,6 @@ public class BodyNotificationTest {
                       + MAIN_WORKSPACE_NAME
                       + ARTIFACTS_PATH
                       + TEST_AGENT_BODY_NAME
-                      + "/"
               ),
               m.getKey(),
               URIS_EQUAL_MESSAGE
@@ -414,6 +426,11 @@ public class BodyNotificationTest {
             Path.of(ClassLoader.getSystemResource("hmas/test_workspace_c0_body_hmas.ttl").toURI()),
             StandardCharsets.UTF_8
         );
+    final var workspaceWithBodyRepresentation =
+        Files.readString(
+            Path.of(ClassLoader.getSystemResource("hmas/test_workspace_body_hmas.ttl").toURI()),
+            StandardCharsets.UTF_8
+        );
     this.client
         .post(TEST_PORT, TEST_HOST, WORKSPACES_PATH)
         .putHeader(AGENT_ID_HEADER, TEST_AGENT_ID)
@@ -427,30 +444,6 @@ public class BodyNotificationTest {
           );
           assertEqualsHMASDescriptions(
               workspaceRepresentation,
-              r.bodyAsString()
-          );
-        })
-        .compose(r -> this.client
-            .post(
-                TEST_PORT,
-                TEST_HOST,
-                WORKSPACES_PATH + MAIN_WORKSPACE_NAME + ARTIFACTS_PATH
-            )
-            .putHeader(AGENT_ID_HEADER, TEST_AGENT_ID)
-            .sendJsonObject(JsonObject.of(
-                ARTIFACT_NAME,
-                COUNTER_ARTIFACT_NAME,
-                ARTIFACT_CLASS,
-                COUNTER_ARTIFACT_CLASS
-            )))
-        .onSuccess(r -> {
-          Assertions.assertEquals(
-              HttpStatus.SC_CREATED,
-              r.statusCode(),
-              CREATED_STATUS_MESSAGE
-          );
-          assertEqualsHMASDescriptions(
-              artifactRepresentation,
               r.bodyAsString()
           );
         })
@@ -514,6 +507,30 @@ public class BodyNotificationTest {
               r.bodyAsString()
           );
         })
+        .compose(r -> this.client
+            .post(
+                TEST_PORT,
+                TEST_HOST,
+                WORKSPACES_PATH + MAIN_WORKSPACE_NAME + ARTIFACTS_PATH
+            )
+            .putHeader(AGENT_ID_HEADER, TEST_AGENT_ID)
+            .sendJsonObject(JsonObject.of(
+                ARTIFACT_NAME,
+                COUNTER_ARTIFACT_NAME,
+                ARTIFACT_CLASS,
+                COUNTER_ARTIFACT_CLASS
+            )))
+        .onSuccess(r -> {
+          Assertions.assertEquals(
+              HttpStatus.SC_CREATED,
+              r.statusCode(),
+              CREATED_STATUS_MESSAGE
+          );
+          assertEqualsHMASDescriptions(
+              artifactRepresentation,
+              r.bodyAsString()
+          );
+        })
         .compose(r -> this.callbackMessages.getFirst().future())
         .onSuccess(m -> {
           Assertions.assertEquals(
@@ -522,7 +539,7 @@ public class BodyNotificationTest {
               URIS_EQUAL_MESSAGE
           );
           assertEqualsHMASDescriptions(
-              workspaceWithArtifactAndBodyRepresentation,
+              workspaceWithBodyRepresentation,
               m.getValue()
           );
         })
@@ -538,6 +555,30 @@ public class BodyNotificationTest {
               m.getValue()
           );
         })
+        .compose(r -> this.callbackMessages.get(2).future())
+        .onSuccess(m -> {
+          Assertions.assertEquals(
+              this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME),
+              m.getKey(),
+              URIS_EQUAL_MESSAGE
+          );
+          assertEqualsHMASDescriptions(
+              workspaceWithArtifactAndBodyRepresentation,
+              m.getValue()
+          );
+        })
+        .compose(r -> this.callbackMessages.get(3).future())
+        .onSuccess(m -> {
+          Assertions.assertEquals(
+              this.getUrl(WORKSPACES_PATH + MAIN_WORKSPACE_NAME + ARTIFACTS_PATH),
+              m.getKey(),
+              URIS_EQUAL_MESSAGE
+          );
+          assertEqualsHMASDescriptions(
+              artifactRepresentation,
+              m.getValue()
+          );
+        })
         .compose(r -> this.client
             .post(TEST_PORT, TEST_HOST, HUB_PATH)
             .sendJsonObject(JsonObject.of(
@@ -549,7 +590,6 @@ public class BodyNotificationTest {
                         + MAIN_WORKSPACE_NAME
                         + ARTIFACTS_PATH
                         + TEST_AGENT_BODY_NAME
-                        + "/"
                 ),
                 HUB_CALLBACK_PARAM,
                 CALLBACK_URL
@@ -583,7 +623,7 @@ public class BodyNotificationTest {
           );
           Assertions.assertNull(r.bodyAsString(), RESPONSE_BODY_EMPTY_MESSAGE);
         })
-        .compose(r -> this.callbackMessages.get(2).future())
+        .compose(r -> this.callbackMessages.get(4).future())
         .onSuccess(m -> {
           Assertions.assertEquals(
               this.getUrl(
@@ -591,7 +631,6 @@ public class BodyNotificationTest {
                       + MAIN_WORKSPACE_NAME
                       + ARTIFACTS_PATH
                       + TEST_AGENT_BODY_NAME
-                      + "/"
               ),
               m.getKey(),
               URIS_EQUAL_MESSAGE
@@ -611,7 +650,7 @@ public class BodyNotificationTest {
               REPRESENTATIONS_EQUAL_MESSAGE
           );
         })
-        .compose(r -> this.callbackMessages.get(3).future())
+        .compose(r -> this.callbackMessages.get(5).future())
         .onSuccess(m -> {
           Assertions.assertEquals(
               this.getUrl(
@@ -619,7 +658,6 @@ public class BodyNotificationTest {
                       + MAIN_WORKSPACE_NAME
                       + ARTIFACTS_PATH
                       + TEST_AGENT_BODY_NAME
-                      + "/"
               ),
               m.getKey(),
               URIS_EQUAL_MESSAGE

@@ -71,7 +71,7 @@ public final class TConstants {
 
   public static final String SUB_WORKSPACE_NAME = "sub";
   public static final String COUNTER_ARTIFACT_URI =
-      "http://localhost:8080/workspaces/sub/artifacts/c0/";
+      "http://localhost:8080/workspaces/sub/artifacts/c0";
 
   public static final String HINT_HEADER = "Slug";
 
@@ -114,19 +114,6 @@ public final class TConstants {
                       COUNTER_ARTIFACT_CLASS,
                       METADATA,
                       "src/main/resources/c1_test_metadata.ttl"
-                  )
-              ),
-              "agents",
-              JsonArray.of(
-                  JsonObject.of(
-                      NAME,
-                      TEST_AGENT_NAME,
-                      "agent-uri",
-                      TEST_AGENT_ID,
-                      "callback-uri",
-                      CALLBACK_URL,
-                      METADATA,
-                      "src/main/resources/a1_test_metadata.ttl"
                   )
               )
           )
