@@ -62,6 +62,15 @@
           hctl:forContentType "text/turtle";
           hctl:hasOperationType td:invokeAction
         ]
+    ], [ a td:ActionAffordance;
+      td:name "getSubWorkspaces";
+      td:hasForm [
+          htv:methodName "GET";
+          hctl:hasTarget <workspaces?parent=test>;
+          hctl:forContentType "application/json";
+          hctl:hasOperationType td:invokeAction;
+          hctl:forSubProtocol "websub"
+        ]
     ], [ a td:ActionAffordance, websub:subscribeToWorkspace;
       td:name "subscribeToWorkspace";
       td:hasForm [
