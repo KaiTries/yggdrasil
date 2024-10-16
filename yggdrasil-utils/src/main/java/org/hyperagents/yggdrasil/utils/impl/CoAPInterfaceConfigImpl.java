@@ -66,8 +66,13 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
+  public String getWorkspacesUriTrailingSlash() {
+    return getWorkspacesUri() + "/";
+  }
+
+  @Override
   public String getWorkspacesUri() {
-    return this.baseUriTrailingSlash + "workspaces/";
+    return this.baseUriTrailingSlash + "workspaces";
   }
 
   @Override
@@ -81,8 +86,13 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
-  public String getArtifactsUri(final String workspaceName) {
+  public String getArtifactsUriTrailingSlash(String workspaceName) {
     return this.getWorkspaceUriTrailingSlash(workspaceName) + "artifacts/";
+  }
+
+  @Override
+  public String getArtifactsUri(final String workspaceName) {
+    return this.getWorkspaceUriTrailingSlash(workspaceName) + "artifacts";
   }
 
   @Override

@@ -66,7 +66,6 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   private final NetworkInterfaceConfig httpConfig;
   private final WebSubConfig notificationConfig;
   private final RepresentationFactory representationFactory;
-  private final HashMap<String, String> wellKnownResources;
 
   private final boolean environment;
 
@@ -86,7 +85,6 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   ) {
     this.httpConfig = httpConfig;
     this.notificationConfig = notificationConfig;
-    this.wellKnownResources = new HashMap<>();
     this.cartagoMessagebox = new CartagoMessagebox(
         vertx.eventBus(),
         environmentConfig
@@ -558,7 +556,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
                         .getWorkspaceUriTrailingSlash(context.pathParam(WORKSPACE_ID_PARAM))),
                     response.body()
                 ))
-                .onComplete(this.handleStoreSucceededReply(context, HttpStatus.SC_CREATED,
+                .onComplete(this.handleStoreReply(context, HttpStatus.SC_CREATED,
                     this.getHeaders(
                         this.httpConfig.getWorkspaceUriTrailingSlash(subWorkspaceName))))
         )
