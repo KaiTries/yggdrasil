@@ -89,9 +89,6 @@ public class HttpServerVerticle extends AbstractVerticle {
         notificationConfig
     );
 
-    router.get("/.well-known/core").handler(handler::handleWellKnown);
-    router.post("/.well-known/core").handler(handler::handleWellKnown);
-
     router.get("/").handler(handler::handleGetEntity);
 
 

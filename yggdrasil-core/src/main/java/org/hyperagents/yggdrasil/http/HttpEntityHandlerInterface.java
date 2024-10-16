@@ -43,5 +43,4 @@ public interface HttpEntityHandlerInterface {
 
   void handleAction(final RoutingContext routingContext);
 
-  void handleWellKnown(RoutingContext routingContext);
 }
