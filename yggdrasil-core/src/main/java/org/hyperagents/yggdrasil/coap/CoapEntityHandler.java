@@ -50,6 +50,8 @@ public class CoapEntityHandler {
     final var uri =
         this.httpConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
 
+    System.out.println("GET " + uri + " from " + exchange.getSourceAddress());
+
     this.rdfStoreMessagebox
         .sendMessage(new RdfStoreMessage.GetEntity(uri)).onSuccess(
             s -> {
