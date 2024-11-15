@@ -130,6 +130,12 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
     return this.baseUriTrailingSlash + "artifacts/" + cleanAgentName + "/";
   }
 
+  @Override
+  public String getArtifactUriFocusing(String workspaceName, String artifactName) {
+    final var cleanArtifactName = validateInput(artifactName);
+    return this.getArtifactsUriTrailingSlash(workspaceName) + cleanArtifactName + "/focus";
+  }
+
 
   // TODO: Add better validation
   /**
