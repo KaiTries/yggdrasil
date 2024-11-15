@@ -78,13 +78,17 @@ public class CoapEntityHandler {
    * Handles post requests to a specific workspace.
    */
   public void handlePostWorkspace(final CoapExchange exchange) {
+    System.out.println("POST " + exchange.getRequestOptions().getUriPathString() + " from "
+        + exchange.getSourceAddress());
     OptionSet optionSet = exchange.advanced().getRequest().getOptions();
     List<Option> options = optionSet.asSortedList();
 
-    final var agentId = options.stream().filter(o -> o.getNumber() == 500)
+    var agentId = options.stream().filter(o -> o.getNumber() == 500)
         .findFirst()
         .orElseThrow()
         .getStringValue();
+
+    agentId = "http://localhost:8080/agents/" + agentId;
 
     final var agentBodyName = options.stream().filter(o -> o.getNumber() == 600)
         .findFirst()
@@ -93,6 +97,7 @@ public class CoapEntityHandler {
 
     // check what the last part of the uri is
     final var uriPathString = exchange.getRequestOptions().getUriPathString().split("/");
+    System.out.println(uriPathString[uriPathString.length - 1]);
     switch (uriPathString[uriPathString.length - 1]) {
       case "join":
         this.handleJoinWorkspace(exchange, uriPathString, agentId, agentBodyName);
@@ -113,6 +118,10 @@ public class CoapEntityHandler {
                                   final String agentId, final String agentBodyName) {
     final var metadata = exchange.getRequestText();
     final var workspaceName = uriPathString[uriPathString.length - 2];
+
+    System.out.println("Joining workspace " + workspaceName + " with agent " + agentId);
+    System.out.println("Metadata: " + metadata);
+    System.out.println("Agent body name: " + agentBodyName);
 
     this.cartagoMessagebox
         .sendMessage(new CartagoMessage.JoinWorkspace(
