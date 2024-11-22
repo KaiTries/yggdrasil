@@ -9,14 +9,15 @@ import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 /**
  * Implementation of the NetworkInterfaceConfig interface.
  */
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   private static final Logger LOGGER = LogManager.getLogger(HttpInterfaceConfigImpl.class);
 
-  private String host;
-  private String baseUri;
-  private String baseUriTrailingSlash;
+  private final String host;
+  private final String baseUri;
+  private final String baseUriTrailingSlash;
   private final boolean enabled;
-  private int port;
+  private final int port;
 
   /**
    * Constructs a new HttpInterfaceConfigImpl object with the specified configuration.
@@ -29,6 +30,10 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
         coapConfig.flatMap(c -> JsonObjectUtils.getBoolean(c, "enabled", LOGGER::error))
             .orElse(false);
     if (!this.enabled) {
+      this.host = null;
+      this.baseUri = null;
+      this.baseUriTrailingSlash = null;
+      this.port = 0;
       return;
     }
     this.host = coapConfig.flatMap(c -> JsonObjectUtils.getString(c, "host", LOGGER::error))
@@ -81,7 +86,7 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
-  public String getWorkspacesUriParentWorkspace(String parentWorkspaceName) {
+  public String getWorkspacesUriParentWorkspace(final String parentWorkspaceName) {
     return this.getWorkspacesUri() + "?parent=" + parentWorkspaceName;
   }
 
@@ -91,7 +96,7 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
-  public String getArtifactsUriTrailingSlash(String workspaceName) {
+  public String getArtifactsUriTrailingSlash(final String workspaceName) {
     return this.getWorkspaceUriTrailingSlash(workspaceName) + "artifacts/";
   }
 
@@ -136,7 +141,7 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
-  public String getArtifactUriFocusing(String workspaceName, String artifactName) {
+  public String getArtifactUriFocusing(final String workspaceName, final String artifactName) {
     final var cleanArtifactName = validateInput(artifactName);
     return this.getArtifactsUriTrailingSlash(workspaceName) + cleanArtifactName + "/focus";
   }

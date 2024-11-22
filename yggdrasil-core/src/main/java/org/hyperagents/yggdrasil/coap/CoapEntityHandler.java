@@ -24,7 +24,7 @@ public class CoapEntityHandler {
   private final CartagoMessagebox cartagoMessagebox;
   private final NetworkInterfaceConfig coapConfig;
   private final NetworkInterfaceConfig httpConfig;
-  private final boolean environment;
+  // private final boolean environment;
 
   /**
    * Default Constructor.
@@ -38,7 +38,7 @@ public class CoapEntityHandler {
         vertx.eventBus(),
         environmentConfig
     );
-    this.environment = environmentConfig.isEnabled();
+    // this.environment = environmentConfig.isEnabled();
     this.coapConfig = coapConfig;
     this.httpConfig = httpConfig;
   }
@@ -46,7 +46,7 @@ public class CoapEntityHandler {
   /**
    * Returns the representation of the entity at the given Uri.
    */
-  public void handleGetEntity(CoapExchange exchange) {
+  public void handleGetEntity(final CoapExchange exchange) {
     final var uri =
         this.httpConfig.getBaseUriTrailingSlash() + exchange.getRequestOptions().getUriPathString();
 
@@ -59,7 +59,7 @@ public class CoapEntityHandler {
                   this.coapConfig.getBaseUriTrailingSlash());
               exchange.accept();
               // start asynchronous processing, passing the exchange to a result callback
-              Response response = new Response(CONTENT);
+              final Response response = new Response(CONTENT);
               response.setPayload(responseBody);
               exchange.respond(response);
             }
@@ -68,7 +68,7 @@ public class CoapEntityHandler {
             f -> {
               exchange.accept();
               // start asynchronous processing, passing the exchange to a result callback
-              Response response = new Response(CONTENT);
+              final Response response = new Response(CONTENT);
               response.setPayload(f.getMessage());
               exchange.respond(response);
             });
@@ -80,8 +80,8 @@ public class CoapEntityHandler {
   public void handlePostWorkspace(final CoapExchange exchange) {
     System.out.println("POST " + exchange.getRequestOptions().getUriPathString() + " from "
         + exchange.getSourceAddress());
-    OptionSet optionSet = exchange.advanced().getRequest().getOptions();
-    List<Option> options = optionSet.asSortedList();
+    final OptionSet optionSet = exchange.advanced().getRequest().getOptions();
+    final List<Option> options = optionSet.asSortedList();
 
     var agentId = options.stream().filter(o -> o.getNumber() == 500)
         .findFirst()
@@ -114,7 +114,7 @@ public class CoapEntityHandler {
   /**
    * Handles join requests to a specific workspace.
    */
-  public void handleJoinWorkspace(CoapExchange exchange, final String[] uriPathString,
+  public void handleJoinWorkspace(final CoapExchange exchange, final String[] uriPathString,
                                   final String agentId, final String agentBodyName) {
     final var metadata = exchange.getRequestText();
     final var workspaceName = uriPathString[uriPathString.length - 2];
@@ -144,12 +144,12 @@ public class CoapEntityHandler {
             )))
         .onSuccess(s -> {
           exchange.accept();
-          Response response = new Response(CONTENT);
+          final Response response = new Response(CONTENT);
           response.setPayload(s.body());
           exchange.respond(response);
         }).onFailure(f -> {
           exchange.accept();
-          Response response = new Response(CONTENT);
+          final Response response = new Response(CONTENT);
           response.setPayload(f.getMessage());
           exchange.respond(response);
         });
@@ -158,7 +158,7 @@ public class CoapEntityHandler {
   /**
    * Handles leave requests to a specific workspace.
    */
-  public void handleLeaveWorkspace(CoapExchange exchange, final String[] uriPathString,
+  public void handleLeaveWorkspace(final CoapExchange exchange, final String[] uriPathString,
                                    final String agentId, final String agentBodyName) {
     final var workspaceName = uriPathString[uriPathString.length - 2];
 
@@ -174,12 +174,12 @@ public class CoapEntityHandler {
             )))
         .onSuccess(s -> {
           exchange.accept();
-          Response response = new Response(CONTENT);
+          final Response response = new Response(CONTENT);
           response.setPayload(s.body());
           exchange.respond(response);
         }).onFailure(f -> {
           exchange.accept();
-          Response response = new Response(CONTENT);
+          final Response response = new Response(CONTENT);
           response.setPayload(f.getMessage());
           exchange.respond(response);
         });

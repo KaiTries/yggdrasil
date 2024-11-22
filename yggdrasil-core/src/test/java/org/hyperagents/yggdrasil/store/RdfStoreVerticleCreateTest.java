@@ -211,7 +211,7 @@ public class RdfStoreVerticleCreateTest {
             final var entityUpdatedMessage =
                 (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
             Assertions.assertEquals(
-                WORKSPACES_PATH + "test",
+                WORKSPACES_PATH + TEST_WORKSPACE_NAME,
                 entityUpdatedMessage.requestIri(),
                 URIS_EQUAL_MESSAGE
             );
@@ -297,7 +297,7 @@ public class RdfStoreVerticleCreateTest {
         .compose(r -> this.storeMessagebox
             .sendMessage(new RdfStoreMessage.CreateArtifact(
                 "http://localhost:8080/workspaces/test/artifacts/",
-                "test",
+                TEST_WORKSPACE_NAME,
                 "c0",
                 artifactRepresentation
             ))
@@ -511,7 +511,7 @@ public class RdfStoreVerticleCreateTest {
                 URIS_EQUAL_MESSAGE
             );
             Assertions.assertEquals(
-                WORKSPACES_PATH + "test",
+                WORKSPACES_PATH + TEST_WORKSPACE_NAME,
                 entityChangedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );

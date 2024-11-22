@@ -5,7 +5,6 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.elements.util.StringUtil;
 import org.hyperagents.yggdrasil.utils.EnvironmentConfig;
 import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
 
@@ -14,9 +13,9 @@ import org.hyperagents.yggdrasil.utils.NetworkInterfaceConfig;
  */
 public class YggdrasilCoAPServer extends CoapServer {
   private final CoapEntityHandler handler;
-  private final NetworkInterfaceConfig coapConfig;
-  private final NetworkInterfaceConfig httpConfig;
-  private final EnvironmentConfig environmentConfig;
+  // private final NetworkInterfaceConfig coapConfig;
+  // private final NetworkInterfaceConfig httpConfig;
+  // private final EnvironmentConfig environmentConfig;
 
   /**
    * Default constructor for Yggdrasil coapServer.
@@ -26,16 +25,16 @@ public class YggdrasilCoAPServer extends CoapServer {
                              final NetworkInterfaceConfig httpConfig,
                              final EnvironmentConfig environmentConfig) {
     super(coapConfig.getPort());
-    this.coapConfig = coapConfig;
-    this.httpConfig = httpConfig;
-    this.environmentConfig = environmentConfig;
+    // this.coapConfig = coapConfig;
+    // this.httpConfig = httpConfig;
+    // this.environmentConfig = environmentConfig;
     this.handler = new CoapEntityHandler(vertx, coapConfig, httpConfig, environmentConfig);
-    setupYggdrasil();
+    setupYggdrasil(this);
   }
 
-  private void setupYggdrasil() {
-    CoapResource workspaces = new Workspaces(handler);
-    this.add(workspaces);
+  private static void setupYggdrasil(final YggdrasilCoAPServer s) {
+    final CoapResource workspaces = new Workspaces(s.handler);
+    s.add(workspaces);
   }
 
   @Override
@@ -47,7 +46,6 @@ public class YggdrasilCoAPServer extends CoapServer {
   class YggdrasilRootResource extends CoapResource {
     public YggdrasilRootResource() {
       super("");
-      setVersion(StringUtil.CALIFORNIUM_VERSION);
     }
 
     @Override
@@ -57,9 +55,9 @@ public class YggdrasilCoAPServer extends CoapServer {
   }
 
   static class ArtifactHandlerResoure extends CoapResource {
-    CoapEntityHandler handler;
+    final CoapEntityHandler handler;
 
-    public ArtifactHandlerResoure(CoapEntityHandler handler, String name) {
+    public ArtifactHandlerResoure(final CoapEntityHandler handler, final String name) {
       super(name);
       this.handler = handler;
     }
@@ -70,18 +68,19 @@ public class YggdrasilCoAPServer extends CoapServer {
     }
 
     @Override
-    public Resource getChild(String name) {
+    public Resource getChild(final String name) {
       return this;
     }
   }
 
   static class WorkspaceHandlerResource extends CoapResource {
-    CoapEntityHandler handler;
-    ArtifactHandlerResoure artifactHandlerResource;
+    final CoapEntityHandler handler;
+    final ArtifactHandlerResoure artifactHandlerResource;
 
 
-    public WorkspaceHandlerResource(CoapEntityHandler handler,
-                                    ArtifactHandlerResoure artifactHandler, String name) {
+    public WorkspaceHandlerResource(final CoapEntityHandler handler,
+                                    final ArtifactHandlerResoure artifactHandler,
+                                    final String name) {
       super(name, false);
       this.handler = handler;
       this.artifactHandlerResource = artifactHandler;
@@ -103,7 +102,7 @@ public class YggdrasilCoAPServer extends CoapServer {
     }
 
     @Override
-    public Resource getChild(String name) {
+    public Resource getChild(final String name) {
       // need to be able to join and leave
       // need to be able to traverse -> artifacts
       if (name.equals("artifacts")) {
@@ -116,7 +115,7 @@ public class YggdrasilCoAPServer extends CoapServer {
   static class Workspaces extends CoapResource {
     private final WorkspaceHandlerResource workspaceHandlerResource;
 
-    public Workspaces(CoapEntityHandler handler) {
+    public Workspaces(final CoapEntityHandler handler) {
       super("workspaces");
       final var artifactHandlerResoure = new ArtifactHandlerResoure(handler, "*");
       this.workspaceHandlerResource = new WorkspaceHandlerResource(handler, artifactHandlerResoure,
@@ -124,7 +123,7 @@ public class YggdrasilCoAPServer extends CoapServer {
     }
 
     @Override
-    public Resource getChild(String name) {
+    public Resource getChild(final String name) {
       return workspaceHandlerResource;
     }
   }
