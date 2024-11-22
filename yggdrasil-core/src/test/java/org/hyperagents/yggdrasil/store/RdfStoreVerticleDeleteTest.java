@@ -145,11 +145,17 @@ public class RdfStoreVerticleDeleteTest {
             );
 
             final var changedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
 
             Assertions.assertEquals(
                 PLATFORM_URI + "workspaces/",
                 changedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
+            Assertions.assertEquals(
+                TEST_WORKSPACE_URI,
+                changedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
 
@@ -287,11 +293,17 @@ public class RdfStoreVerticleDeleteTest {
             );
 
             final var changedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
 
             Assertions.assertEquals(
                 PLATFORM_URI + "workspaces?parent=test",
                 changedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
+            Assertions.assertEquals(
+                SUB_WORKSPACE_URI,
+                changedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
 

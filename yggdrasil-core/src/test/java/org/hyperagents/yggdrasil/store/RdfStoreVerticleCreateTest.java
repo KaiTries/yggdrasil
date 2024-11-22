@@ -220,10 +220,15 @@ public class RdfStoreVerticleCreateTest {
                 entityUpdatedMessage.content()
             );
             final var entityChangedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
             Assertions.assertEquals(
                 "http://localhost:8080/workspaces?parent=test",
                 entityChangedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+            Assertions.assertEquals(
+                WORKSPACES_PATH + "sub",
+                entityChangedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
 
@@ -486,11 +491,16 @@ public class RdfStoreVerticleCreateTest {
                 entityUpdatedMessage.content()
             );
             final var entityChangedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged)
+                (HttpNotificationDispatcherMessage.CollectionChanged)
                     this.notificationQueue.take();
             Assertions.assertEquals(
                 WORKSPACES_PATH,
                 entityChangedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+            Assertions.assertEquals(
+                WORKSPACES_PATH + "test",
+                entityChangedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
             final var expectedContent =
