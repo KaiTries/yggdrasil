@@ -14,6 +14,7 @@ enum MessageFields {
   ENTITY_REPRESENTATION("entityRepresentation"),
   ACTION_CONTENT("actionContent"),
   NOTIFICATION_CONTENT("notificationContent"),
+  CHANGED_ENTITY_URI("changedEntityUri"),
   PARENT_WORKSPACE_URI("parentWorkspaceUri"),
   QUERY("query"),
   NAMED_GRAPH_URIS("namedGraphUris"),

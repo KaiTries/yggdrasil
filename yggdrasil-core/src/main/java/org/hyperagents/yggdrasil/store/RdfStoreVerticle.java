@@ -588,11 +588,11 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
 
                       this.dispatcherMessagebox.sendMessage(
-                          new HttpNotificationDispatcherMessage.EntityChanged(
-                              this.httpConfig.getWorkspacesUri()
-                                  + "?parent=" + parentWorkspaceName,
+                          new HttpNotificationDispatcherMessage.CollectionChanged(
+                              this.httpConfig.getWorkspacesUriParentWorkspace(parentWorkspaceName),
                               RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                  this.httpConfig.getBaseUriTrailingSlash())
+                                  this.httpConfig.getBaseUriTrailingSlash()),
+                              workspaceIri
                           )
                       );
                     }));
@@ -655,10 +655,11 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
 
                       this.dispatcherMessagebox.sendMessage(
-                          new HttpNotificationDispatcherMessage.EntityChanged(
+                          new HttpNotificationDispatcherMessage.CollectionChanged(
                               this.httpConfig.getWorkspacesUriTrailingSlash(),
                               RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                  this.httpConfig.getBaseUriTrailingSlash())
+                                  this.httpConfig.getBaseUriTrailingSlash()),
+                              workspaceIri
                           )
                       );
                     }));
@@ -848,10 +849,11 @@ public class RdfStoreVerticle extends AbstractVerticle {
                         m.setNamespace(HMAS, HMAS_IRI);
 
                         this.dispatcherMessagebox.sendMessage(
-                            new HttpNotificationDispatcherMessage.EntityChanged(
+                            new HttpNotificationDispatcherMessage.CollectionChanged(
                                 this.httpConfig.getWorkspacesUriTrailingSlash(),
                                 RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                    this.httpConfig.getBaseUriTrailingSlash())
+                                    this.httpConfig.getBaseUriTrailingSlash()),
+                                requestIri.toString()
                             )
                         );
                       }));
@@ -922,11 +924,11 @@ public class RdfStoreVerticle extends AbstractVerticle {
                                   parentWorkspaceSplit[parentWorkspaceSplit.length - 1];
 
                               this.dispatcherMessagebox.sendMessage(
-                                  new HttpNotificationDispatcherMessage.EntityChanged(
-                                      this.httpConfig.getWorkspacesUri()
-                                          + "?parent=" + parentWorkspaceName,
+                                  new HttpNotificationDispatcherMessage.CollectionChanged(
+                                      this.httpConfig.getWorkspacesUriParentWorkspace(parentWorkspaceName),
                                       RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                          this.httpConfig.getBaseUriTrailingSlash())
+                                          this.httpConfig.getBaseUriTrailingSlash()),
+                                      requestIri.toString()
                                   )
                               );
                             }));

@@ -43,6 +43,8 @@ public interface NetworkInterfaceConfig extends Shareable {
    */
   String getWorkspacesUriTrailingSlash();
 
+  String getWorkspacesUriParentWorkspace(String parentWorkspaceName);
+
   /**
    * Gets the URI for retrieving all workspaces.
    *

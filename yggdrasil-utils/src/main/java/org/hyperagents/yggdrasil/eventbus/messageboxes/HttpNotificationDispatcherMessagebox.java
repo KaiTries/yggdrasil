@@ -40,6 +40,13 @@ public class HttpNotificationDispatcherMessagebox
           )
       );
       this.eventBus.registerDefaultCodec(
+          HttpNotificationDispatcherMessage.CollectionChanged.class,
+          new GenericMessageCodec<>(
+              HttpNotificationDispatcherMessage.CollectionChanged.class,
+              new HttpNotificationDispatcherMessageMarshaller()
+          )
+      );
+      this.eventBus.registerDefaultCodec(
           HttpNotificationDispatcherMessage.EntityChanged.class,
           new GenericMessageCodec<>(
             HttpNotificationDispatcherMessage.EntityChanged.class,

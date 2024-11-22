@@ -66,6 +66,11 @@ public class HttpInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
+  public String getWorkspacesUriParentWorkspace(String parentWorkspaceName) {
+    return this.getWorkspacesUri() + "?parent=" + parentWorkspaceName;
+  }
+
+  @Override
   public String getWorkspacesUri() {
     return this.baseUriTrailingSlash + "workspaces";
   }

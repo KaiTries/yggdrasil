@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 enum MessageNotifications {
+  COLLECTION_CHANGED("collectionChanged"),
   ENTITY_CREATED("entityCreated"),
   ENTITY_CHANGED("entityChanged"),
   ENTITY_DELETED("entityDeleted"),

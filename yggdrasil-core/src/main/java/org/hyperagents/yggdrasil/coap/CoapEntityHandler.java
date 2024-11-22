@@ -169,10 +169,8 @@ public class CoapEntityHandler {
         ))
         .compose(r -> this.rdfStoreMessagebox
             .sendMessage(new RdfStoreMessage.DeleteEntity(
-                this.httpConfig.getAgentBodyUriTrailingSlash(
-                    workspaceName,
-                    agentBodyName
-                )
+                workspaceName,
+                "body_" + agentBodyName
             )))
         .onSuccess(s -> {
           exchange.accept();

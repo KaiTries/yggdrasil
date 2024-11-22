@@ -124,6 +124,17 @@ public class HttpNotificationVerticle extends AbstractVerticle {
             content,
             "actionSucceeded"
           );
+        case HttpNotificationDispatcherMessage.CollectionChanged(String requestIri,
+                                                                 String content,
+                                                                 String changedEntityUri) ->
+          this.handleCollectionChangedNotificationSending(
+              client,
+              webSubHubUri,
+              requestIri,
+              content,
+              changedEntityUri,
+              "text/turtle"
+          );
       }
     });
   }
@@ -161,7 +172,22 @@ public class HttpNotificationVerticle extends AbstractVerticle {
     );
   }
 
-
+  private void handleCollectionChangedNotificationSending(
+      final WebClient client,
+      final String webSubHubUri,
+      final String requestIri,
+      final String content,
+      final String changedEntityIri,
+      final String contentType
+  ) {
+    this.registry.getCallbackIris(requestIri).forEach(c ->
+        this.createNotificationRequest(client, webSubHubUri, c, requestIri)
+            .putHeader(HttpHeaders.LOCATION, changedEntityIri)
+            .putHeader(HttpHeaders.CONTENT_LENGTH, Integer.toString(content.length()))
+            .putHeader(HttpHeaders.CONTENT_TYPE, contentType)
+            .sendBuffer(Buffer.buffer(content), this.reponseHandler(c))
+    );
+  }
 
   private void handleNotificationSending(
       final WebClient client,

@@ -81,6 +81,11 @@ public class CoAPInterfaceConfigImpl implements NetworkInterfaceConfig {
   }
 
   @Override
+  public String getWorkspacesUriParentWorkspace(String parentWorkspaceName) {
+    return this.getWorkspacesUri() + "?parent=" + parentWorkspaceName;
+  }
+
+  @Override
   public String getWorkspaceUri(final String workspaceName) {
     return this.getWorkspacesUri() + validateInput(workspaceName);
   }

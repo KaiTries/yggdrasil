@@ -32,6 +32,11 @@ public class HttpNotificationDispatcherMessageMarshaller
                             () -> new JsonParseException("The request method is not valid")
                           )
     ) {
+      case COLLECTION_CHANGED -> new HttpNotificationDispatcherMessage.CollectionChanged(
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.NOTIFICATION_CONTENT.getName()).getAsString(),
+          jsonObject.get(MessageFields.CHANGED_ENTITY_URI.getName()).getAsString()
+      );
       case ENTITY_CREATED -> new HttpNotificationDispatcherMessage.EntityCreated(
         jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
         jsonObject.get(MessageFields.NOTIFICATION_CONTENT.getName()).getAsString()
@@ -87,6 +92,10 @@ public class HttpNotificationDispatcherMessageMarshaller
             MessageFields.REQUEST_METHOD.getName(),
             MessageNotifications.ARTIFACT_OBS_PROP.getName()
         );
+      }
+      case HttpNotificationDispatcherMessage.CollectionChanged m -> {
+        json.addProperty(MessageFields.NOTIFICATION_CONTENT.getName(), m.content());
+        json.addProperty(MessageFields.CHANGED_ENTITY_URI.getName(), m.changedEntityIri());
       }
       case HttpNotificationDispatcherMessage.EntityChanged m -> {
         json.addProperty(MessageFields.NOTIFICATION_CONTENT.getName(), m.content());

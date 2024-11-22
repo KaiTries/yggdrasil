@@ -43,6 +43,16 @@ public sealed interface HttpNotificationDispatcherMessage {
       implements HttpNotificationDispatcherMessage {}
 
   /**
+   * Used to send updates regarding the /workspaces/ and /artifacts/ collections.
+   *
+   * @param requestIri Iri of the collection
+   * @param content Changed collection
+   * @param changedEntityIri Iri of the added / removed element
+   */
+  record CollectionChanged(String requestIri, String content, String changedEntityIri)
+      implements HttpNotificationDispatcherMessage {}
+
+  /**
    * A record representing a message that an entity has been deleted.
    *
    * <p>This record is used when an entity has been deleted
