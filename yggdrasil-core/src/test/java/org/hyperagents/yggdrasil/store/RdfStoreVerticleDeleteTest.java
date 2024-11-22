@@ -331,6 +331,7 @@ public class RdfStoreVerticleDeleteTest {
             );
             final var artifactDeletionMessage =
                 (HttpNotificationDispatcherMessage.EntityDeleted) this.notificationQueue.take();
+
             RdfStoreVerticleTestHelpers.assertEqualsThingDescriptions(
                 Files.readString(
                     Path.of(ClassLoader.getSystemResource(COUNTER_ARTIFACT_FILE).toURI()),
@@ -420,6 +421,16 @@ public class RdfStoreVerticleDeleteTest {
                 parentWorkspaceUpdateMessage.requestIri(),
                 URIS_EQUAL_MESSAGE
             );
+
+            final var changedCollectionMessage =
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
+
+            Assertions.assertEquals(
+                SUB_WORKSPACE_URI + "/artifacts/c0",
+                changedCollectionMessage.changedEntityIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
             final var deletionMessage =
                 (HttpNotificationDispatcherMessage.EntityDeleted) this.notificationQueue.take();
             RdfStoreVerticleTestHelpers.assertEqualsThingDescriptions(
@@ -506,6 +517,16 @@ public class RdfStoreVerticleDeleteTest {
                 parentWorkspaceUpdateMessage.requestIri(),
                 URIS_EQUAL_MESSAGE
             );
+
+            final var collectionChangedMessage =
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
+
+            Assertions.assertEquals(
+                TEST_AGENT_BODY_URI,
+                collectionChangedMessage.changedEntityIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
             final var deletionMessage =
                 (HttpNotificationDispatcherMessage.EntityDeleted) this.notificationQueue.take();
             RdfStoreVerticleTestHelpers.assertEqualsThingDescriptions(

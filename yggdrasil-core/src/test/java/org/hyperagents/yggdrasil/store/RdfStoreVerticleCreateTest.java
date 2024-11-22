@@ -320,10 +320,16 @@ public class RdfStoreVerticleCreateTest {
                 entityUpdatedMessage.content()
             );
             final var entityChangedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
             Assertions.assertEquals(
                 "http://localhost:8080/workspaces/test/artifacts/",
                 entityChangedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
+            Assertions.assertEquals(
+                WORKSPACES_PATH + TEST_WORKSPACE_NAME + "/artifacts/c0",
+                entityChangedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
 
@@ -415,10 +421,16 @@ public class RdfStoreVerticleCreateTest {
                 entityUpdatedMessage.content()
             );
             final var entityChangedMessage =
-                (HttpNotificationDispatcherMessage.EntityChanged) this.notificationQueue.take();
+                (HttpNotificationDispatcherMessage.CollectionChanged) this.notificationQueue.take();
             Assertions.assertEquals(
                 "http://localhost:8080/workspaces/test/artifacts/",
                 entityChangedMessage.requestIri(),
+                URIS_EQUAL_MESSAGE
+            );
+
+            Assertions.assertEquals(
+                WORKSPACES_PATH + "test/artifacts/body_kai",
+                entityChangedMessage.changedEntityIri(),
                 URIS_EQUAL_MESSAGE
             );
 
