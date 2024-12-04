@@ -60,12 +60,12 @@ public class MainVerticle extends AbstractVerticle {
           v -> coapConfig.isEnabled()
               ? this.vertx.deployVerticle(new CoapServerVerticle())
               : Future.succeededFuture()
+      ).compose( v -> notificationConfig.isEnabled()
+          ? this.vertx.deployVerticle("org.hyperagents.yggdrasil.websub.HttpNotificationVerticle")
+          : Future.succeededFuture()
       ).compose(
         v -> this.vertx.deployVerticle(new RdfStoreVerticle(),
-          new DeploymentOptions().setConfig(c))).compose(v -> notificationConfig.isEnabled()
-        ?
-        this.vertx.deployVerticle("org.hyperagents.yggdrasil.websub.HttpNotificationVerticle") :
-        Future.succeededFuture()).compose(v -> new EnvironmentConfigImpl(c).isEnabled()
+          new DeploymentOptions().setConfig(c))).compose(v -> new EnvironmentConfigImpl(c).isEnabled()
         ?
         this.vertx.deployVerticle("org.hyperagents.yggdrasil.cartago.CartagoVerticle") :
         Future.succeededFuture());
