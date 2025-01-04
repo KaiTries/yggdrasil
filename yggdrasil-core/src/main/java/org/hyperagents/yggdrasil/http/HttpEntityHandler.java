@@ -106,6 +106,10 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
             httpConfig);
   }
 
+  public void test(final RoutingContext context) {
+
+  }
+
   /**
    * Redirect function that returns the same requestUri without the trailing slash.
    *
@@ -148,7 +152,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
     var parentUri = context.request().getParam("parent");
     parentUri = parentUri == null ? this.httpConfig.getBaseUriTrailingSlash()
         : this.httpConfig.getWorkspaceUriTrailingSlash(parentUri);
-    this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetWorkspaces(parentUri)).onComplete(
+    this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetWorkspaces(parentUri, TURTLE_CONTENT_TYPE)).onComplete(
         this.handleStoreReply(context, HttpStatus.SC_OK,
             this.getHeaders(context.request().absoluteURI()))
     );
@@ -161,7 +165,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
    */
   public void handleGetArtifacts(final RoutingContext context) {
     final var workspaceName = context.pathParam(WORKSPACE_ID_PARAM);
-    this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetArtifacts(workspaceName))
+    this.rdfStoreMessagebox.sendMessage(new RdfStoreMessage.GetArtifacts(workspaceName, TURTLE_CONTENT_TYPE))
         .onComplete(this.handleStoreReply(context, HttpStatus.SC_OK,
             this.getHeaders(this.httpConfig.getArtifactsUri(workspaceName))));
   }

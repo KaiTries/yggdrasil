@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 import org.hyperagents.yggdrasil.eventbus.messages.RdfStoreMessage;
 
 /**
- * This class is responsible for serializing and deserializing
- * RdfStoreMessage objects to and from JSON.
+ * This class is responsible for serializing and deserializing RdfStoreMessage objects to and from
+ * JSON.
  */
 public class RdfStoreMessageMarshaller
     implements JsonSerializer<RdfStoreMessage>, JsonDeserializer<RdfStoreMessage> {
@@ -98,20 +98,23 @@ public class RdfStoreMessageMarshaller
         json.addProperty(MessageFields.ENTITY_REPRESENTATION.getName(), entityRepresentation);
       }
 
-      case RdfStoreMessage.GetWorkspaces(String containerWorkspace) -> {
+      case RdfStoreMessage.GetWorkspaces(String containerWorkspace, String responseFormat) -> {
         json.addProperty(
             MessageFields.REQUEST_METHOD.getName(),
             MessageRequestMethods.GET_WORKSPACES.getName()
         );
         json.addProperty(MessageFields.REQUEST_URI.getName(), containerWorkspace);
+        json.addProperty(MessageFields.RESPONSE_FORMAT.getName(), responseFormat);
+
       }
 
-      case RdfStoreMessage.GetArtifacts(String workspaceName) -> {
+      case RdfStoreMessage.GetArtifacts(String workspaceName, String responseFormat) -> {
         json.addProperty(
             MessageFields.REQUEST_METHOD.getName(),
             MessageRequestMethods.GET_ARTIFACTS.getName()
         );
         json.addProperty(MessageFields.WORKSPACE_NAME.getName(), workspaceName);
+        json.addProperty(MessageFields.RESPONSE_FORMAT.getName(), responseFormat);
       }
 
       case RdfStoreMessage.QueryKnowledgeGraph(
@@ -155,73 +158,76 @@ public class RdfStoreMessageMarshaller
   ) throws JsonParseException {
     final var jsonObject = json.getAsJsonObject();
     return switch (
-      MessageRequestMethods.getFromName(
-                             jsonObject.get(MessageFields.REQUEST_METHOD.getName()).getAsString()
-                           )
-                           .orElseThrow(
-                             () -> new JsonParseException("The request method is not valid")
-                           )
+        MessageRequestMethods.getFromName(
+                jsonObject.get(MessageFields.REQUEST_METHOD.getName()).getAsString()
+            )
+            .orElseThrow(
+                () -> new JsonParseException("The request method is not valid")
+            )
     ) {
       case GET_ENTITY -> new RdfStoreMessage.GetEntity(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString()
       );
       case GET_ENTITY_IRI -> new RdfStoreMessage.GetEntityIri(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString()
       );
       case CREATE_ARTIFACT -> new RdfStoreMessage.CreateArtifact(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
-        jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
       );
       case CREATE_WORKSPACE -> new RdfStoreMessage.CreateWorkspace(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString(),
-        jsonObject.get(MessageFields.PARENT_WORKSPACE_URI.getName()).isJsonNull()
-        ? Optional.empty()
-        : Optional.of(jsonObject.get(MessageFields.PARENT_WORKSPACE_URI.getName()).getAsString()),
-        jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_URI_HINT.getName()).getAsString(),
+          jsonObject.get(MessageFields.PARENT_WORKSPACE_URI.getName()).isJsonNull()
+              ? Optional.empty()
+              : Optional.of(
+              jsonObject.get(MessageFields.PARENT_WORKSPACE_URI.getName()).getAsString()),
+          jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
       );
       case CREATE_BODY -> new RdfStoreMessage.CreateBody(
-        jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
-        jsonObject.get(MessageFields.AGENT_ID.getName()).getAsString(),
-        jsonObject.get(MessageFields.AGENT_NAME.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
+          jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
+          jsonObject.get(MessageFields.AGENT_ID.getName()).getAsString(),
+          jsonObject.get(MessageFields.AGENT_NAME.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
       );
       case UPDATE_ENTITY -> new RdfStoreMessage.ReplaceEntity(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
       );
       case PATCH_ENTITY -> new RdfStoreMessage.UpdateEntity(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
-        jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.ENTITY_REPRESENTATION.getName()).getAsString()
       );
       case DELETE_ENTITY -> new RdfStoreMessage.DeleteEntity(
           jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
           jsonObject.get(MessageFields.ARTIFACT_NAME.getName()).getAsString()
       );
       case GET_WORKSPACES -> new RdfStoreMessage.GetWorkspaces(
-        jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString()
+          jsonObject.get(MessageFields.REQUEST_URI.getName()).getAsString(),
+          jsonObject.get(MessageFields.RESPONSE_FORMAT.getName()).getAsString()
       );
       case GET_ARTIFACTS -> new RdfStoreMessage.GetArtifacts(
-        jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString()
+          jsonObject.get(MessageFields.WORKSPACE_NAME.getName()).getAsString(),
+          jsonObject.get(MessageFields.RESPONSE_FORMAT.getName()).getAsString()
       );
       case QUERY -> new RdfStoreMessage.QueryKnowledgeGraph(
-        jsonObject.get(MessageFields.QUERY.getName()).getAsString(),
-        jsonObject.get(MessageFields.DEFAULT_GRAPH_URIS.getName())
-                  .getAsJsonArray()
-                  .asList()
-                  .stream()
-                  .map(JsonElement::getAsString)
-                  .collect(Collectors.toList()),
-        jsonObject.get(MessageFields.NAMED_GRAPH_URIS.getName())
-                  .getAsJsonArray()
-                  .asList()
-                  .stream()
-                  .map(JsonElement::getAsString)
-                  .collect(Collectors.toList()),
-        jsonObject.get(MessageFields.CONTENT_TYPE.getName()).getAsString()
+          jsonObject.get(MessageFields.QUERY.getName()).getAsString(),
+          jsonObject.get(MessageFields.DEFAULT_GRAPH_URIS.getName())
+              .getAsJsonArray()
+              .asList()
+              .stream()
+              .map(JsonElement::getAsString)
+              .collect(Collectors.toList()),
+          jsonObject.get(MessageFields.NAMED_GRAPH_URIS.getName())
+              .getAsJsonArray()
+              .asList()
+              .stream()
+              .map(JsonElement::getAsString)
+              .collect(Collectors.toList()),
+          jsonObject.get(MessageFields.CONTENT_TYPE.getName()).getAsString()
       );
       default -> throw new JsonParseException("The request method is not valid");
     };

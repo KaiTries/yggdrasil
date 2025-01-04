@@ -89,6 +89,8 @@ public class HttpServerVerticle extends AbstractVerticle {
         notificationConfig
     );
 
+    router.get("/test").handler(handler::test);
+
     router.get("/").handler(handler::handleGetEntity);
 
 

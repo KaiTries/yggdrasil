@@ -1,14 +1,14 @@
 {
   "http-config" : {
-    "host" : "0.0.0.0",
+    "host" : "127.0.0.1",
     "port" : 8080,
-    "base-uri" : "http://localhost:8080/"
+    "base-uri" : "http://127.0.0.1:8080/"
   },
   "coap-config" : {
     "enabled" : true,
     "host" : "0.0.0.0",
     "port" : 5683,
-    "base-uri" : "coap://localhost:5683/"
+    "base-uri" : "coap://127.0.0.1:5683/"
   },
   "notification-config" : {
     "enabled" : true
@@ -17,20 +17,11 @@
     {
       "name" : "agent_name",
       "agent-uri" : "http://localhost:8081",
-      "callback-uri" : "http://localhost:8081/callback",
-      "body-config" : [
-        {
-          "metadata" : "src/main/resources/a1_test_metadata.ttl",
-          "join" : [ "w1"]
-        },
-        {
-          "metadata" : "src/main/resources/a1_test_metadata.ttl"
-        }
-      ]
+      "callback-uri" : "http://localhost:8081/callback"
     }
   ],
   "environment-config" : {
-    "enabled" : true,
+    "enabled" : false,
     "ontology" : "td",
     "known-artifacts" : [
       {
@@ -52,23 +43,16 @@
     ],
     "workspaces" : [
       {
-        "name" : "w1",
+        "name" : "root",
         "metadata" : "src/main/resources/w1_test_metadata.ttl",
         "artifacts" : [
           {
-            "name" : "c1",
-            "class" : "http://example.org/Counter",
-            "metadata" : "src/main/resources/c1_test_metadata.ttl",
-            "created-by" : "agent_name",
-            "focused-by" : [
-              "agent_name"
-            ]
+            "name" : "datalake"
           }
-        ],
-        "joined-by" : [
-          "agent_name"
+
         ]
       }
+
     ]
   }
 }

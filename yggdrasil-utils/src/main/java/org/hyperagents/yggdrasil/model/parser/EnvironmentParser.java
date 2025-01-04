@@ -222,13 +222,7 @@ public final class EnvironmentParser {
                   }
                   final var representation =
                       JsonObjectUtils.getString(ar, "representation", LOGGER::error);
-                  if (artifactClass.isEmpty() && representation.isEmpty()) {
-                    LOGGER.warn(
-                        "Artifact in workspace not having a class for creating it"
-                        + " or a static representation, skipping"
-                    );
-                    return Stream.empty();
-                  }
+
 
                   final var createdBy = JsonObjectUtils.getString(ar, "created-by", LOGGER::error);
                   if (createdBy.isPresent()) {

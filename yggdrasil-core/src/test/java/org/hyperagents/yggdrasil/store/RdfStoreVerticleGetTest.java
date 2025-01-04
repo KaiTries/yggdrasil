@@ -43,6 +43,7 @@ public class RdfStoreVerticleGetTest {
   private static final String TEST_WORKSPACE_TTL = "test_workspace_td.ttl";
   private static final String TEST_GETENTITYIRI_TTL = "test_getEntityIri_testWorkspace_td.ttl";
   private static final String REPRESENTATION_EQUAL = "Representations should be equal";
+  private static final String TEXT_TURTLE = "text/turtle";
 
 
 
@@ -104,7 +105,7 @@ public class RdfStoreVerticleGetTest {
         StandardCharsets.UTF_8
     );
     this.storeMessagebox
-        .sendMessage(new RdfStoreMessage.GetWorkspaces("http://localhost:8080/"))
+        .sendMessage(new RdfStoreMessage.GetWorkspaces("http://localhost:8080/", TEXT_TURTLE))
         .onSuccess(r -> Assertions.assertEquals(noContainedWorkspaces, r.body(), "should match"))
         .onComplete(ctx.succeedingThenComplete());
   }
@@ -146,7 +147,7 @@ public class RdfStoreVerticleGetTest {
         ));
 
     this.storeMessagebox
-        .sendMessage(new RdfStoreMessage.GetWorkspaces("http://localhost:8080/"))
+        .sendMessage(new RdfStoreMessage.GetWorkspaces("http://localhost:8080/", TEXT_TURTLE))
         .onSuccess(r -> Assertions.assertEquals(
             twoContainedWorkspaces, r.body().replaceAll(" ", ""),
             REPRESENTATION_EQUAL))
@@ -183,7 +184,7 @@ public class RdfStoreVerticleGetTest {
 
     this.storeMessagebox
         .sendMessage(new RdfStoreMessage
-            .GetWorkspaces(WORKSPACES_URI + WORKSPACE_NAME))
+            .GetWorkspaces(WORKSPACES_URI + WORKSPACE_NAME, TEXT_TURTLE))
         .onSuccess(r -> Assertions.assertEquals(
             noContainedWorkspaces, r.body().replaceAll(" ", ""),
             REPRESENTATION_EQUAL))
@@ -234,7 +235,7 @@ public class RdfStoreVerticleGetTest {
 
     this.storeMessagebox
         .sendMessage(new RdfStoreMessage
-            .GetWorkspaces(WORKSPACES_URI + WORKSPACE_NAME))
+            .GetWorkspaces(WORKSPACES_URI + WORKSPACE_NAME, TEXT_TURTLE))
         .onSuccess(r -> Assertions.assertEquals(
             twoContainedWorkspaces, r.body().replaceAll(" ", ""),
             REPRESENTATION_EQUAL))

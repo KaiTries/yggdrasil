@@ -107,7 +107,7 @@ public sealed interface RdfStoreMessage {
    *
    * @param containerWorkspace The name of the container workspace.
    */
-  record GetWorkspaces(String containerWorkspace) implements RdfStoreMessage {
+  record GetWorkspaces(String containerWorkspace, String responseFormat) implements RdfStoreMessage {
   }
 
   /**
@@ -115,7 +115,7 @@ public sealed interface RdfStoreMessage {
    *
    * @param workspaceName The name of the workspace.
    */
-  record GetArtifacts(String workspaceName) implements RdfStoreMessage {
+  record GetArtifacts(String workspaceName, String responseFormat) implements RdfStoreMessage {
   }
 
   /**

@@ -7,6 +7,8 @@ import io.vertx.ext.web.RoutingContext;
  */
 public interface HttpEntityHandlerInterface {
 
+  void test(final RoutingContext routingContext);
+
   void handleRedirectWithoutSlash(final RoutingContext routingContext);
 
   void handleGetEntity(final RoutingContext routingContext);

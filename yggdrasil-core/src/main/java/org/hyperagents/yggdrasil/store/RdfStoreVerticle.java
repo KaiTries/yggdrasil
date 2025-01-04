@@ -5,6 +5,8 @@ import static org.eclipse.rdf4j.model.util.Values.iri;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -13,13 +15,16 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.function.Failable;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -120,10 +125,10 @@ public class RdfStoreVerticle extends AbstractVerticle {
           );
           case RdfStoreMessage.DeleteEntity(String workspaceName, String artifactName) ->
               this.handleDeleteEntity(workspaceName, artifactName, message);
-          case RdfStoreMessage.GetWorkspaces(String containerWorkspace) ->
-              this.handleGetWorkspaces(containerWorkspace, message);
-          case RdfStoreMessage.GetArtifacts(String workspaceName) ->
-              this.handleGetArtifacts(workspaceName, message);
+          case RdfStoreMessage.GetWorkspaces(String containerWorkspace, String responseFormat) ->
+              this.handleGetWorkspaces(containerWorkspace, responseFormat, message);
+          case RdfStoreMessage.GetArtifacts(String workspaceName, String responseFormat) ->
+              this.handleGetArtifacts(workspaceName, responseFormat, message);
           case RdfStoreMessage.QueryKnowledgeGraph(
               String query,
               List<String> defaultGraphUris,
@@ -184,15 +189,20 @@ public class RdfStoreVerticle extends AbstractVerticle {
                 this.vertx.sharedData()
                     .<String, Environment>getLocalMap("environment")
                     .get(DEFAULT_CONFIG_VALUE);
+
             environment.getWorkspaces()
-                .forEach(w -> w.getRepresentation().ifPresent(Failable.asConsumer(r -> {
+                .forEach(Failable.asConsumer(w -> {
                   ownMessagebox.sendMessage(new RdfStoreMessage.CreateWorkspace(
                       httpConfig.getWorkspacesUriTrailingSlash(),
                       w.getName(),
-                      w.getParentName().map(httpConfig::getWorkspaceUri),
-                      Files.readString(r, StandardCharsets.UTF_8)
+                      w.getParentName(),
+                      this.representationFactory.createWorkspaceRepresentation(
+                          w.getName(),
+                          Set.of(),
+                          false
+                      )
                   ));
-                  w.getArtifacts().forEach(a -> a.getRepresentation().ifPresent(
+                  w.getArtifacts().forEach(a -> a.getRepresentation().ifPresentOrElse(
                       Failable.asConsumer(ar ->
                           ownMessagebox.sendMessage(new RdfStoreMessage.CreateArtifact(
                               httpConfig.getArtifactsUriTrailingSlash(w.getName()),
@@ -200,9 +210,20 @@ public class RdfStoreVerticle extends AbstractVerticle {
                               a.getName(),
                               Files.readString(ar, StandardCharsets.UTF_8)
                           ))
-                      )
+                      ),
+                      () -> ownMessagebox.sendMessage(new RdfStoreMessage.CreateArtifact(
+                          httpConfig.getArtifactsUriTrailingSlash(w.getName()),
+                          w.getName(),
+                          a.getName(),
+                          this.representationFactory.createArtifactRepresentation(
+                              w.getName(),
+                              a.getName(),
+                              "https://purl.org/hmas/Artifact",
+                              false
+                          )
+                      ))
                   ));
-                })));
+                }));
           }
           return null;
         })
@@ -234,6 +255,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
 
   private void handleGetWorkspaces(
       final String containerWorkspaceUri,
+      final String responseFormat,
       final Message<RdfStoreMessage> message
   ) throws IOException {
     // either parentWorkspace or the Platform
@@ -243,20 +265,80 @@ public class RdfStoreVerticle extends AbstractVerticle {
           containerWorkspaceUri.equals(this.httpConfig.getBaseUriTrailingSlash())
               ? PLATFORM_FRAGMENT : WORKSPACE_FRAGMENT;
 
-      final Model m = handleGetContainedThings(
-          result.get(),
-          containerWorkspaceUri + containerFragment,
-          containerFragment.equals(PLATFORM_FRAGMENT) ? PLATFORM_HMAS_IRI : WORKSPACE_HMAS_IRI,
-          containerFragment.equals(PLATFORM_FRAGMENT) ? HOSTS_HMAS_IRI : CONTAINS_HMAS_IRI,
-          WORKSPACE_HMAS_IRI,
-          WORKSPACE_FRAGMENT
-      );
 
-      this.replyWithPayload(message, RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-          this.httpConfig.getBaseUriTrailingSlash()));
+
+      if (responseFormat.equals("text/turtle")) {
+        final String m = retrieveContainedThings(
+            result.get(),
+            containerWorkspaceUri + containerFragment,
+            containerFragment.equals(PLATFORM_FRAGMENT) ? PLATFORM_HMAS_IRI : WORKSPACE_HMAS_IRI,
+            containerFragment.equals(PLATFORM_FRAGMENT) ? HOSTS_HMAS_IRI : CONTAINS_HMAS_IRI,
+            WORKSPACE_HMAS_IRI,
+            WORKSPACE_FRAGMENT
+        );
+        this.replyWithPayload(message, m);
+      } else  {
+        final String m = retrieveContainedThingsAsJson(
+            result.get(),
+            containerWorkspaceUri + containerFragment,
+            containerFragment.equals(PLATFORM_FRAGMENT) ? PLATFORM_HMAS_IRI : WORKSPACE_HMAS_IRI,
+            containerFragment.equals(PLATFORM_FRAGMENT) ? HOSTS_HMAS_IRI : CONTAINS_HMAS_IRI,
+            WORKSPACE_HMAS_IRI,
+            WORKSPACE_FRAGMENT
+        );
+        this.replyWithPayload(message, m);
+
+      }
     } else {
       this.replyEntityNotFound(message);
     }
+  }
+
+  private String retrieveContainedThings(final Model container,
+                                         final String containerIri,
+                                         final String containerType,
+                                         final String containmentAction,
+                                         final String containedIri,
+                                         final String containedFragment) throws IOException {
+    final var m = handleGetContainedThings(container,containerIri,containerType,containmentAction
+        ,containedIri,containedFragment);
+    return RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
+        this.httpConfig.getBaseUriTrailingSlash());
+  }
+
+  private String retrieveContainedThingsAsJson(
+      final Model container,
+      final String containerIri,
+      final String containerType,
+      final String containmentAction,
+      final String containedIri,
+      final String containedFragment
+  ) {
+    final var allContainedEntities = container.filter(
+        iri(containerIri), iri(containmentAction), null
+    );
+
+    allContainedEntities.removeIf(
+        triple -> !triple.getObject().stringValue().contains(containedFragment)
+    );
+
+
+    JsonArray jsonArray = new JsonArray(
+        allContainedEntities.stream()
+            .map(Statement::getObject)
+            .map(object -> {
+              String uri = object.stringValue();
+              int lastSlashIndex = uri.lastIndexOf('/');
+              int fragmentIndex = uri.indexOf('#');
+              return uri.substring(lastSlashIndex + 1, fragmentIndex);
+            })
+            .collect(Collectors.toList())
+    );
+
+    // turn it into a json array of just the objects
+
+    return jsonArray.encode();
+
   }
 
   private Model handleGetContainedThings(final Model container,
@@ -292,20 +374,34 @@ public class RdfStoreVerticle extends AbstractVerticle {
   }
 
   private void handleGetArtifacts(final String workspaceName,
+                                  final String responseFormat,
                                   final Message<RdfStoreMessage> message) throws IOException {
     final var workspaceIri = this.httpConfig.getWorkspaceUri(workspaceName);
     final var result = this.store.getEntityModel(iri(workspaceIri));
+
     if (result.isPresent()) {
-      final Model m = handleGetContainedThings(
-          result.get(),
-          workspaceIri + WORKSPACE_FRAGMENT,
-          WORKSPACE_HMAS_IRI,
-          CONTAINS_HMAS_IRI,
-          ARTIFACT_HMAS_IRI,
-          ARTIFACT_FRAGMENT
-      );
-      this.replyWithPayload(message, RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-          this.httpConfig.getBaseUriTrailingSlash()));
+      if (responseFormat.equals("text/turtle")) {
+        final String m = retrieveContainedThings(
+            result.get(),
+            workspaceIri + WORKSPACE_FRAGMENT,
+            WORKSPACE_HMAS_IRI,
+            CONTAINS_HMAS_IRI,
+            ARTIFACT_HMAS_IRI,
+            ARTIFACT_FRAGMENT
+        );
+        this.replyWithPayload(message, m);
+      } else {
+        final String m = retrieveContainedThingsAsJson(
+            result.get(),
+            workspaceIri + WORKSPACE_FRAGMENT,
+            WORKSPACE_HMAS_IRI,
+            CONTAINS_HMAS_IRI,
+            ARTIFACT_HMAS_IRI,
+            ARTIFACT_FRAGMENT
+        );
+        this.replyWithPayload(message, m);
+
+      }
     } else {
       this.replyEntityNotFound(message);
     }
@@ -469,7 +565,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
               )
           );
 
-          final Model m = handleGetContainedThings(
+          final String m = retrieveContainedThings(
               workspaceModel,
               workspaceIri + WORKSPACE_FRAGMENT,
               WORKSPACE_HMAS_IRI,
@@ -481,8 +577,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
           this.dispatcherMessagebox.sendMessage(
               new HttpNotificationDispatcherMessage.CollectionChanged(
                   workspaceIri + "/artifacts/",
-                  RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                      this.httpConfig.getBaseUriTrailingSlash()),
+                  m,
                   entityIri.toString()
               )
           );
@@ -548,7 +643,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                           )
                       );
 
-                      final Model m = handleGetContainedThings(
+                      final String m = retrieveContainedThings(
                           parentModel,
                           parentIri + WORKSPACE_FRAGMENT,
                           WORKSPACE_HMAS_IRI,
@@ -563,8 +658,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                       this.dispatcherMessagebox.sendMessage(
                           new HttpNotificationDispatcherMessage.CollectionChanged(
                               this.httpConfig.getWorkspacesUriParentWorkspace(parentWorkspaceName),
-                              RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                  this.httpConfig.getBaseUriTrailingSlash()),
+                              m,
                               workspaceIri
                           )
                       );
@@ -607,7 +701,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                           )
                       );
 
-                      final Model m = handleGetContainedThings(
+                      final String m = retrieveContainedThings(
                           platformModel,
                           platformResourceProfileIri + PLATFORM_FRAGMENT,
                           PLATFORM_HMAS_IRI,
@@ -619,8 +713,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                       this.dispatcherMessagebox.sendMessage(
                           new HttpNotificationDispatcherMessage.CollectionChanged(
                               this.httpConfig.getWorkspacesUriTrailingSlash(),
-                              RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                  this.httpConfig.getBaseUriTrailingSlash()),
+                              m,
                               workspaceIri
                           )
                       );
@@ -699,6 +792,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
     final var requestIri = artifactName == null ? workspaceIri :
         iri(this.httpConfig.getArtifactUri(workspaceName, artifactName));
 
+
     this.store
         .getEntityModel(requestIri)
         .ifPresentOrElse(
@@ -738,7 +832,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                           )
                       );
 
-                      final Model m = handleGetContainedThings(
+                      final String m = retrieveContainedThings(
                           workspaceModel,
                           workspaceIri + WORKSPACE_FRAGMENT,
                           WORKSPACE_HMAS_IRI,
@@ -750,8 +844,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                       this.dispatcherMessagebox.sendMessage(
                           new HttpNotificationDispatcherMessage.CollectionChanged(
                               workspaceIri + "/artifacts/",
-                              RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                  this.httpConfig.getBaseUriTrailingSlash()),
+                              m,
                               requestIri.toString()
                           )
                       );
@@ -804,7 +897,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                             )
                         );
 
-                        final Model m = handleGetContainedThings(
+                        final String m = retrieveContainedThings(
                             platformModel,
                             platformIri + PLATFORM_FRAGMENT,
                             PLATFORM_HMAS_IRI,
@@ -816,8 +909,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                         this.dispatcherMessagebox.sendMessage(
                             new HttpNotificationDispatcherMessage.CollectionChanged(
                                 this.httpConfig.getWorkspacesUriTrailingSlash(),
-                                RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                    this.httpConfig.getBaseUriTrailingSlash()),
+                                m,
                                 requestIri.toString()
                             )
                         );
@@ -861,7 +953,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                                   )
                               );
 
-                              final Model m = handleGetContainedThings(
+                              final String m = retrieveContainedThings(
                                   parentModel,
                                   parentIri.toString(),
                                   WORKSPACE_HMAS_IRI,
@@ -879,8 +971,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
                                   new HttpNotificationDispatcherMessage.CollectionChanged(
                                       this.httpConfig
                                           .getWorkspacesUriParentWorkspace(parentWorkspaceName),
-                                      RdfModelUtils.modelToString(m, RDFFormat.TURTLE,
-                                          this.httpConfig.getBaseUriTrailingSlash()),
+                                      m,
                                       requestIri.toString()
                                   )
                               );

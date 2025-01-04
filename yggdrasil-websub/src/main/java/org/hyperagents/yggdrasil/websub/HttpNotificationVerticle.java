@@ -180,6 +180,8 @@ public class HttpNotificationVerticle extends AbstractVerticle {
       final String changedEntityIri,
       final String contentType
   ) {
+    System.out.println("Sending collection changed notification");
+    System.out.println("Location: " + changedEntityIri);
     this.registry.getCallbackIris(requestIri).forEach(c ->
         this.createNotificationRequest(client, webSubHubUri, c, requestIri)
             .putHeader(HttpHeaders.LOCATION, changedEntityIri)
