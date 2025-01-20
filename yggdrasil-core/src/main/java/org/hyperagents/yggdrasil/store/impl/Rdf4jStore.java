@@ -165,6 +165,9 @@ public class Rdf4jStore implements RdfStore {
         originalQueryDataset.getNamedGraphs().forEach(queryDataset::addNamedGraph);
       }
       preparedQuery.setDataset(queryDataset);
+
+      System.out.println(preparedQuery.getDataset());
+
       switch (preparedQuery) {
         case TupleQuery preparedTupleQuery -> preparedTupleQuery.evaluate(
                     responseContentType.equals("application/sparql-results+xml")

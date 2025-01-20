@@ -39,7 +39,6 @@ import org.xmlunit.diff.Diff;
  */
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 @ExtendWith(VertxExtension.class)
-@Disabled
 public class RdfStoreVerticleQueryTest {
   private static final String PLATFORM_URI = "http://localhost:8080/";
   private static final String TEST_WORKSPACE_URI = PLATFORM_URI + "workspaces/test";
@@ -47,9 +46,9 @@ public class RdfStoreVerticleQueryTest {
   private static final String CSV_MIME_TYPE = "text/csv";
   private static final String JSON_MIME_TYPE = "application/sparql-results+json";
   private static final String WORKSPACE_BINDING = "workspace";
-  private static final String SUB_WORKSPACE_URI = "http://localhost:8080/workspaces/sub/";
+  private static final String SUB_WORKSPACE_URI = "http://localhost:8080/workspaces/sub";
   private static final String C0_ARTIFACT_URI =
-      "http://localhost:8080/workspaces/sub/artifacts/c0/";
+      "http://localhost:8080/workspaces/sub/artifacts/c0";
 
   private RdfStoreMessagebox messagebox;
 
@@ -141,7 +140,7 @@ public class RdfStoreVerticleQueryTest {
         .onSuccess(r -> Assertions.assertEquals(
             """
             workspace,artifact\r
-            http://localhost:8080/workspaces/sub/#workspace,c0\r
+            http://localhost:8080/workspaces/sub#workspace,c0\r
             """,
             r.body(),
             CONTENTS_EQUAL_MESSAGE
@@ -155,7 +154,7 @@ public class RdfStoreVerticleQueryTest {
         .onSuccess(r -> Assertions.assertEquals(
             """
             ?workspace\t?artifact
-            <http://localhost:8080/workspaces/sub/#workspace>\tc0
+            <http://localhost:8080/workspaces/sub#workspace>\tc0
             """,
             r.body(),
             CONTENTS_EQUAL_MESSAGE
@@ -203,7 +202,6 @@ public class RdfStoreVerticleQueryTest {
   }
 
   @Test
-  @Disabled
   public void testXmlTupleQueryRequest(final VertxTestContext ctx)
       throws URISyntaxException, IOException {
     final var result =
@@ -230,8 +228,8 @@ public class RdfStoreVerticleQueryTest {
   public void testTupleQueryRequestWithDefaultUris(final VertxTestContext ctx) {
     this.testTupleQueryRequest(
             List.of(
-                SUB_WORKSPACE_URI,
-                C0_ARTIFACT_URI
+                SUB_WORKSPACE_URI + "/",
+                C0_ARTIFACT_URI + "/"
             ),
             List.of(),
             CSV_MIME_TYPE
@@ -239,7 +237,7 @@ public class RdfStoreVerticleQueryTest {
         .onSuccess(r -> Assertions.assertEquals(
             """
             workspace,artifact\r
-            http://localhost:8080/workspaces/sub/#workspace,c0\r
+            http://localhost:8080/workspaces/sub#workspace,c0\r
             """,
             r.body(),
             CONTENTS_EQUAL_MESSAGE
@@ -249,13 +247,12 @@ public class RdfStoreVerticleQueryTest {
 
   // DOES THIS MAKE SENSE?
   @Test
-  @Disabled
   public void testTupleQueryRequestWithNamedUris(final VertxTestContext ctx) {
     this.testTupleQueryRequest(
             List.of(),
             List.of(
-                SUB_WORKSPACE_URI,
-                C0_ARTIFACT_URI
+                SUB_WORKSPACE_URI + "/",
+                C0_ARTIFACT_URI + "/"
             ),
             CSV_MIME_TYPE
         )
@@ -362,9 +359,9 @@ public class RdfStoreVerticleQueryTest {
 
   // DOES THIS MAKE SENSE? EXPECTING FALSE DOESNT GUARANTEE TRUE WITH CORRECT PARAMS
   @Test
-  @Disabled
   public void testBooleanQueryRequestWithNamedUrisSuccess(final VertxTestContext ctx) {
-    this.testBooleanQueryRequest(List.of(), List.of(SUB_WORKSPACE_URI, C0_ARTIFACT_URI),
+    this.testBooleanQueryRequest(List.of(), List.of(SUB_WORKSPACE_URI,
+                C0_ARTIFACT_URI),
             CSV_MIME_TYPE)
         .onSuccess(r -> Assertions.assertEquals(
             "true",
@@ -438,8 +435,8 @@ public class RdfStoreVerticleQueryTest {
         );
     this.testGraphQueryRequest(
             List.of(
-                SUB_WORKSPACE_URI,
-                C0_ARTIFACT_URI
+                SUB_WORKSPACE_URI + "/",
+                C0_ARTIFACT_URI + "/"
             ),
             List.of()
         )
@@ -510,7 +507,7 @@ public class RdfStoreVerticleQueryTest {
         .onSuccess(r -> Assertions.assertEquals(
             """
             workspace,artifact\r
-            http://localhost:8080/workspaces/sub/#workspace,\r
+            http://localhost:8080/workspaces/sub#workspace,\r
             """,
             r.body(),
             CONTENTS_EQUAL_MESSAGE
@@ -564,7 +561,7 @@ public class RdfStoreVerticleQueryTest {
         .onSuccess(r -> Assertions.assertEquals(
             """
             ?workspace\t?artifact
-            <http://localhost:8080/workspaces/sub/#workspace>\t
+            <http://localhost:8080/workspaces/sub#workspace>\t
             """,
             r.body(),
             CONTENTS_EQUAL_MESSAGE

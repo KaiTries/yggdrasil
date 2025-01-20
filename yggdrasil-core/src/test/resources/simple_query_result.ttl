@@ -1,5 +1,4 @@
-
-<http://localhost:8080/workspaces/sub/#workspace> a <https://purl.org/hmas/Workspace>,
+<http://localhost:8080/workspaces/sub#workspace> a <https://purl.org/hmas/Workspace>,
     <https://www.w3.org/2019/wot/td#Thing>;
   <https://www.w3.org/2019/wot/td#title> "sub";
   <https://www.w3.org/2019/wot/td#hasSecurityConfiguration> [ a <https://www.w3.org/2019/wot/security#NoSecurityScheme>
@@ -67,12 +66,12 @@
           <https://www.w3.org/2019/wot/hypermedia#hasOperationType> <https://www.w3.org/2019/wot/td#invokeAction>
         ]
     ];
-  <https://purl.org/hmas/isContainedIn> <http://localhost:8080/workspaces/test/#workspace>;
-  <https://purl.org/hmas/contains> <http://localhost:8080/workspaces/sub/artifacts/c0/#artifact> .
+  <https://purl.org/hmas/isContainedIn> <http://localhost:8080/workspaces/test#workspace>;
+  <https://purl.org/hmas/contains> <http://localhost:8080/workspaces/sub/artifacts/c0#artifact> .
 
-<http://localhost:8080/workspaces/test/#workspace> <https://purl.org/hmas/contains>
-    <http://localhost:8080/workspaces/sub/#workspace> .
+<http://localhost:8080/workspaces/test#workspace> <https://purl.org/hmas/contains>
+    <http://localhost:8080/workspaces/sub#workspace> .
 
-<http://localhost:8080/workspaces/sub/artifacts/c0/#artifact> <https://purl.org/hmas/isContainedIn>
-    <http://localhost:8080/workspaces/sub/#workspace>;
+<http://localhost:8080/workspaces/sub/artifacts/c0#artifact> <https://purl.org/hmas/isContainedIn>
+    <http://localhost:8080/workspaces/sub#workspace>;
   <https://www.w3.org/2019/wot/td#title> "c0" .

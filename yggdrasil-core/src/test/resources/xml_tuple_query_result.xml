@@ -7,7 +7,7 @@
   <results>
     <result>
       <binding name='workspace'>
-        <uri>http://localhost:8080/workspaces/sub/#workspace</uri>
+        <uri>http://localhost:8080/workspaces/sub#workspace</uri>
       </binding>
       <binding name='artifact'>
         <literal>c0</literal>
