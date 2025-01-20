@@ -115,7 +115,8 @@ public class RdfStoreVerticleCreateTest {
         .onComplete(ctx.failingThenComplete());
   }
 
-  // TODO: dont think we need to check malformed uri in the rdf part? should be only http
+  // dont think we need to check malformed uri in the rdf part? should be only http
+  // As in the createWorkspace method we do not use the requestUri this test is redundant
   @Test
   @Disabled
   public void testCreateWorkspaceMalformedUri(final VertxTestContext ctx)

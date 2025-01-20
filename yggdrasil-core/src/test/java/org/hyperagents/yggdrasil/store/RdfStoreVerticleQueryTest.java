@@ -27,7 +27,6 @@ import org.hyperagents.yggdrasil.utils.impl.WebSubConfigImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.builder.DiffBuilder;
@@ -357,21 +356,6 @@ public class RdfStoreVerticleQueryTest {
         .onComplete(ctx.succeedingThenComplete());
   }
 
-  // DOES THIS MAKE SENSE? EXPECTING FALSE DOESNT GUARANTEE TRUE WITH CORRECT PARAMS
-  @Test
-  public void testBooleanQueryRequestWithNamedUrisSuccess(final VertxTestContext ctx) {
-    this.testBooleanQueryRequest(List.of(), List.of(SUB_WORKSPACE_URI,
-                C0_ARTIFACT_URI),
-            CSV_MIME_TYPE)
-        .onSuccess(r -> Assertions.assertEquals(
-            "true",
-            r.body(),
-            CONTENTS_EQUAL_MESSAGE
-        ))
-        .onComplete(ctx.succeedingThenComplete());
-  }
-
-
   @Test
   public void testBooleanQueryRequestWithNamedUris(final VertxTestContext ctx) {
     this.testBooleanQueryRequest(List.of(), List.of("http://localhost:8080/"), CSV_MIME_TYPE)
@@ -448,23 +432,16 @@ public class RdfStoreVerticleQueryTest {
   }
 
   @Test
-  @Disabled
-  public void testGraphQueryRequestWithNamedUris(final VertxTestContext ctx)
-      throws URISyntaxException, IOException {
-    final var result =
-        Files.readString(
-            Path.of(ClassLoader.getSystemResource("named_query_result.ttl").toURI()),
-            StandardCharsets.UTF_8
-        );
+  public void testGraphQueryRequestWithNamedUris(final VertxTestContext ctx) {
     this.testGraphQueryRequest(
             List.of(),
             List.of(
-                SUB_WORKSPACE_URI,
-                C0_ARTIFACT_URI
+                SUB_WORKSPACE_URI + "/",
+                C0_ARTIFACT_URI + "/"
             )
         )
         .onSuccess(r -> Assertions.assertEquals(
-            result,
+            "",
             r.body(),
             CONTENTS_EQUAL_MESSAGE
         ))

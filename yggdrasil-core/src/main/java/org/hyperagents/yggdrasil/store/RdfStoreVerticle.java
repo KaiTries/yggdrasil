@@ -510,6 +510,7 @@ public class RdfStoreVerticle extends AbstractVerticle {
       final RdfStoreMessage.CreateWorkspace content,
       final Message<RdfStoreMessage> message
   ) throws IllegalArgumentException, IOException {
+    // RdfModelUtils.createIri(content.requestUri());
     // Create IRI for new entity
     final var workspaceIri = this.httpConfig.getWorkspaceUri(content.workspaceName());
     final var resourceIRI = RdfModelUtils.createIri(workspaceIri);
