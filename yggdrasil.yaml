@@ -86,11 +86,13 @@ paths:
       description:
         Handles registration to the WebSub Hub for getting notifications about the platform. The topic for which subscribing, i.e., the URI of the resource to be observed needs to be specified. Allowed values are
 
-        * ".../workspaces/", gives notifications about workspaces creation
+        * ".../workspaces/", gives notifications about contained workspace changes. Responds with a collection of all top-level workspaces.
+          
+        * ".../workspaces?parent=:parent", gives notifications about contained workspace changes. Responds with a collection of all contained sub-workspaces. (the parent workspace must exist prior to subscription)
 
         * ".../workspaces/:wkspid", gives notifications about this workspace update and deletion (the workspace must exist prior to subscription)
 
-        * ".../workspaces/:wkspid/artifacts/", gives notifications about artifacts creation (the workspace must exist prior to subscription)
+        * ".../workspaces/:wkspid/artifacts/", gives notifications about artifacts changes. Responds with a collection of all contained artifacts. (the workspace must exist prior to subscription)
 
         * ".../workspaces/:wkspid/artifacts/:artid", gives notifications about this artifact update and deletion (the artifact must exist prior to subscription)
 
@@ -636,7 +638,7 @@ paths:
       tags:
         - workspace
       summary: Create a new top-level workspace
-      description: Create a new empty top-level workspace, directly hosted on the platform. It could be created by the platform itself or supplied as a TURTLE formatted body in the request.
+      description: Create a new empty top-level workspace, directly hosted on the platform. A default workspace representation is created by the platform. Optionally additional triples can be supplied in the request body to extend the workspace representation. The workspace name needs to be specified in the Slug header.
       operationId: createWorkspace
       parameters:
         - in: header
@@ -656,7 +658,6 @@ paths:
       requestBody:
         description: Create a new top-level workspace
         content:
-          none:
           text/turtle:
             schema:
               type: string
@@ -1565,6 +1566,7 @@ paths:
             type: string
             examples:
               - "JamesBond"
+          required: true
         - in: path
           name: workspaceName
           schema:
