@@ -2,6 +2,7 @@ package org.hyperagents.yggdrasil.model.impl;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import org.hyperagents.yggdrasil.model.interfaces.AgentBody;
@@ -19,9 +20,10 @@ public class AgentBodyImpl implements AgentBody {
    * Default constructor, does path / file validation.
    */
   public AgentBodyImpl(final String metadata, final List<String> joinedWorkspaces) {
-    final File f = new File(metadata);
+    final Path path = Paths.get(metadata).toAbsolutePath();
+    final File f = path.toFile();
     if (f.exists() && !f.isDirectory()) {
-      this.metadata = Path.of(metadata);
+      this.metadata = path;
     } else {
       System.out.println("unable to identify file for metadata");
       this.metadata = null;
