@@ -449,6 +449,7 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
   public void handleJoinWorkspace(final RoutingContext routingContext) {
     final var agentId = routingContext.request().getHeader(AGENT_WEBID_HEADER);
     final var agentBodyName = routingContext.request().getHeader(AGENT_LOCALNAME_HEADER);
+    final var bodyMetaData = routingContext.body().asString();
 
     if (agentId == null) {
       routingContext.response().setStatusCode(HttpStatus.SC_UNAUTHORIZED).end();
@@ -474,7 +475,13 @@ public class HttpEntityHandler implements HttpEntityHandlerInterface {
                 agentBodyName,
                 response.body()
             ))
-        )
+        ).onComplete(response -> {
+          if (bodyMetaData != null) {
+          this.rdfStoreMessagebox
+            .sendMessage(new RdfStoreMessage.UpdateEntity(
+                this.httpConfig.getAgentBodyUri(workspaceName, agentBodyName),
+                bodyMetaData
+            ));}})
         .onComplete(this.handleStoreReply(routingContext));
   }
 
